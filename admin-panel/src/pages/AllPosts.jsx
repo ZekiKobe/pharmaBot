@@ -6,13 +6,14 @@ import LoadingSpinner from '../components/LoadingSpinner';
 export default function AllPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({ approvalStatus: '', type: '' });
+  const [filter, setFilter] = useState({ approvalStatus: '', type: '', isActive: '' });
 
   useEffect(() => {
     setLoading(true);
     const params = {};
     if (filter.approvalStatus) params.approvalStatus = filter.approvalStatus;
     if (filter.type) params.type = filter.type;
+    if (filter.isActive) params.isActive = filter.isActive;
     api.getPosts(params).then((res) => setPosts(res.data)).catch(console.error).finally(() => setLoading(false));
   }, [filter]);
 
@@ -30,6 +31,11 @@ export default function AllPosts() {
           <option value="">All types</option>
           <option value="buyer">Buyer</option>
           <option value="seller">Seller</option>
+        </select>
+        <select value={filter.isActive} onChange={(e) => setFilter({ ...filter, isActive: e.target.value })} className="input-field w-auto min-w-[140px] py-2">
+          <option value="">All visibility</option>
+          <option value="true">Active only</option>
+          <option value="false">Inactive only</option>
         </select>
         <span className="ml-auto text-sm font-medium text-slate-400">{posts.length} results</span>
       </div>

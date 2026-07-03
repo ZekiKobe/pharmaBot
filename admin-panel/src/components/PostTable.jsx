@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import StatusBadge, { TypeBadge } from './StatusBadge';
+import StatusBadge, { TypeBadge, ActiveBadge } from './StatusBadge';
 import EmptyState from './EmptyState';
 import { IconEye, IconCheck, IconX } from './Icons';
 
@@ -14,7 +14,7 @@ export default function PostTable({ posts, showActions = false, onApprove, onRej
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/80">
-              {['Type', 'Medicine', 'City', 'Status', 'Submitted', 'Actions'].map((h) => (
+              {['Type', 'Medicine', 'City', 'Status', 'Visibility', 'Submitted', 'Actions'].map((h) => (
                 <th key={h} className={`px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500 ${h === 'Actions' ? 'text-right' : ''}`}>{h}</th>
               ))}
             </tr>
@@ -29,6 +29,13 @@ export default function PostTable({ posts, showActions = false, onApprove, onRej
                 </td>
                 <td className="px-5 py-4 text-slate-600">{post.city}</td>
                 <td className="px-5 py-4"><StatusBadge status={post.approvalStatus} /></td>
+                <td className="px-5 py-4">
+                  {post.approvalStatus === 'approved' ? (
+                    <ActiveBadge isActive={post.isActive} />
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </td>
                 <td className="px-5 py-4 text-slate-400">{new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
                 <td className="px-5 py-4">
                   <div className="flex items-center justify-end gap-1.5">

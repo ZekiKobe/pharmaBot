@@ -50,6 +50,7 @@ const postSchema = new mongoose.Schema(
     ],
     approvedAt: { type: Date },
     amount: { type: Number, default: 20 },
+    isActive: { type: Boolean, default: true, index: true },
   },
   { timestamps: true }
 );

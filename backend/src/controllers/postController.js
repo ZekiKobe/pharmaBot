@@ -82,7 +82,7 @@ const getApprovedPosts = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 20;
     const skip = (page - 1) * limit;
 
-    const filter = { approvalStatus: 'approved' };
+    const filter = { approvalStatus: 'approved', isActive: { $ne: false } };
     if (req.query.type) filter.type = req.query.type;
     if (req.query.city) filter.city = new RegExp(req.query.city, 'i');
     if (req.query.category) filter.category = req.query.category;
@@ -114,6 +114,7 @@ const getPostById = async (req, res, next) => {
     const post = await Post.findOne({
       _id: req.params.id,
       approvalStatus: 'approved',
+      isActive: { $ne: false },
     }).populate('userId', 'username fullName');
 
     if (!post) {
@@ -245,7 +246,7 @@ const deleteMyPostHandler = async (req, res, next) => {
 
 const getCities = async (_req, res, next) => {
   try {
-    const cities = await Post.distinct('city', { approvalStatus: 'approved' });
+    const cities = await Post.distinct('city', { approvalStatus: 'approved', isActive: { $ne: false } });
     res.json({ success: true, data: cities.sort() });
   } catch (error) {
     next(error);

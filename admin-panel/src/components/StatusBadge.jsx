@@ -22,3 +22,16 @@ export function TypeBadge({ type }) {
     </span>
   );
 }
+
+export function ActiveBadge({ isActive }) {
+  const active = isActive !== false;
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+        active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+      }`}
+    >
+      {active ? 'Active' : 'Inactive'}
+    </span>
+  );
+}

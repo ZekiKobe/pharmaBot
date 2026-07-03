@@ -2,7 +2,7 @@ const Post = require('../models/Post');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const { getBot } = require('../bot/botInstance');
-const { publishPostToChannels } = require('./channelService');
+const { publishPostToChannels, unpublishPostFromChannels } = require('./channelService');
 const { notifyAdminsPendingPost } = require('./adminNotifyService');
 const { escapeHtml } = require('./telegramService');
 const logger = require('../utils/logger');
@@ -101,6 +101,7 @@ const approvePost = async (postId, adminId) => {
 
   post.approvalStatus = 'approved';
   post.paymentStatus = 'verified';
+  post.isActive = true;
   post.publishedChannels = publishedChannels;
   post.telegramChannelMessageId = publishedChannels[0]?.messageId || null;
   post.approvedAt = new Date();
@@ -235,6 +236,46 @@ const deleteMyPost = async (postId, telegramId) => {
   return post;
 };
 
+const adminDeletePost = async (postId) => {
+  const post = await Post.findById(postId);
+  if (!post) throw new Error('Post not found');
+
+  const bot = getBot();
+  if (post.approvalStatus === 'approved' && post.publishedChannels?.length) {
+    await unpublishPostFromChannels(post, bot);
+  }
+
+  await Payment.deleteMany({ postId: post._id });
+  await Post.findByIdAndDelete(post._id);
+  return post;
+};
+
+const setPostActive = async (postId, isActive) => {
+  const post = await Post.findById(postId).populate('userId');
+  if (!post) throw new Error('Post not found');
+  if (post.approvalStatus !== 'approved') {
+    throw new Error('Only approved posts can be activated or deactivated');
+  }
+
+  const bot = getBot();
+  const becomingInactive = post.isActive !== false && isActive === false;
+  const becomingActive = post.isActive === false && isActive === true;
+
+  if (becomingInactive && post.publishedChannels?.length) {
+    await unpublishPostFromChannels(post, bot);
+  }
+
+  if (becomingActive && bot) {
+    const publishedChannels = await publishPostToChannels(post, bot);
+    post.publishedChannels = publishedChannels;
+    post.telegramChannelMessageId = publishedChannels[0]?.messageId || null;
+  }
+
+  post.isActive = isActive;
+  await post.save();
+  return post;
+};
+
 const getPaymentInfo = () => ({
   cbeAccountNumber: process.env.CBE_ACCOUNT_NUMBER || '1000262694392',
   telebirrPhone: process.env.TELEBIRR_PHONE || '0993676861',
@@ -251,6 +292,8 @@ module.exports = {
   getOwnedPost,
   updateMyPost,
   deleteMyPost,
+  adminDeletePost,
+  setPostActive,
   getPaymentInfo,
   POST_PRICE,
 };

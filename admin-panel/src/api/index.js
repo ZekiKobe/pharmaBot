@@ -77,6 +77,14 @@ export const api = {
       body: JSON.stringify({ reason }),
     }),
 
+  deletePost: (id) => request(`/admin/posts/${id}`, { method: 'DELETE' }),
+
+  setPostActive: (id, isActive) =>
+    request(`/admin/posts/${id}/active`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isActive }),
+    }),
+
   getChannels: () => request('/admin/channels'),
 
   createChannel: (data) =>

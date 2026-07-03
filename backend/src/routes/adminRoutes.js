@@ -6,6 +6,8 @@ const {
   getPostDetails,
   approve,
   reject,
+  deletePost,
+  toggleActive,
   getAnalytics,
 } = require('../controllers/adminController');
 const {
@@ -31,5 +33,7 @@ router.get('/posts', getAllPosts);
 router.get('/posts/:id', getPostDetails);
 router.patch('/posts/:id/approve', approve);
 router.patch('/posts/:id/reject', reject);
+router.patch('/posts/:id/active', toggleActive);
+router.delete('/posts/:id', deletePost);
 
 module.exports = router;

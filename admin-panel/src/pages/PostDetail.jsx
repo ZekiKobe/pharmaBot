@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import StatusBadge, { TypeBadge } from '../components/StatusBadge';
+import StatusBadge, { TypeBadge, ActiveBadge } from '../components/StatusBadge';
 import RejectModal from '../components/RejectModal';
 import ConfirmModal from '../components/ConfirmModal';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -21,12 +21,16 @@ function DetailRow({ label, value, highlight }) {
 
 export default function PostDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showReject, setShowReject] = useState(false);
   const [showApprove, setShowApprove] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [showDeactivate, setShowDeactivate] = useState(false);
+  const [showActivate, setShowActivate] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   const loadPost = () => {
@@ -66,6 +70,35 @@ export default function PostDetail() {
     }
   };
 
+  const handleDelete = async () => {
+    setActionLoading(true);
+    try {
+      await api.deletePost(id);
+      showToast('Post permanently deleted');
+      navigate('/posts', { replace: true });
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setActionLoading(false);
+      setShowDelete(false);
+    }
+  };
+
+  const handleToggleActive = async (isActive) => {
+    setActionLoading(true);
+    try {
+      await api.setPostActive(id, isActive);
+      showToast(isActive ? 'Post activated' : 'Post deactivated');
+      loadPost();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setActionLoading(false);
+      setShowDeactivate(false);
+      setShowActivate(false);
+    }
+  };
+
   if (loading) return <LoadingSpinner label="Loading post details..." />;
 
   if (error) {
@@ -84,6 +117,8 @@ export default function PostDetail() {
   const { post, payment } = data;
   const isBuyer = post.type === 'buyer';
   const screenshot = post.paymentScreenshot || payment?.screenshot;
+  const isApproved = post.approvalStatus === 'approved';
+  const isActive = post.isActive !== false;
 
   return (
     <div>
@@ -101,6 +136,7 @@ export default function PostDetail() {
             <div className="flex flex-wrap items-center gap-2">
               <TypeBadge type={post.type} />
               <StatusBadge status={post.approvalStatus} />
+              {isApproved && <ActiveBadge isActive={post.isActive} />}
             </div>
             <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
               {post.medicineName}
@@ -115,18 +151,33 @@ export default function PostDetail() {
             </p>
           </div>
 
-          {post.approvalStatus === 'pending' && (
-            <div className="flex gap-2">
-              <button onClick={() => setShowApprove(true)} className="btn-success">
-                <IconCheck />
-                Approve
+          <div className="flex flex-wrap gap-2">
+            {post.approvalStatus === 'pending' && (
+              <>
+                <button onClick={() => setShowApprove(true)} className="btn-success">
+                  <IconCheck />
+                  Approve
+                </button>
+                <button onClick={() => setShowReject(true)} className="btn-danger">
+                  <IconX />
+                  Reject
+                </button>
+              </>
+            )}
+            {isApproved && isActive && (
+              <button onClick={() => setShowDeactivate(true)} className="btn-secondary">
+                Deactivate
               </button>
-              <button onClick={() => setShowReject(true)} className="btn-danger">
-                <IconX />
-                Reject
+            )}
+            {isApproved && !isActive && (
+              <button onClick={() => setShowActivate(true)} className="btn-success">
+                Activate
               </button>
-            </div>
-          )}
+            )}
+            <button onClick={() => setShowDelete(true)} className="btn-danger">
+              Delete permanently
+            </button>
+          </div>
         </div>
       </div>
 
@@ -273,6 +324,42 @@ export default function PostDetail() {
           post={post}
           onClose={() => setShowReject(false)}
           onConfirm={handleReject}
+        />
+      )}
+
+      {showDelete && (
+        <ConfirmModal
+          title="Delete post permanently?"
+          message={`This will permanently remove "${post.medicineName}" from the database, including payment records. This cannot be undone.`}
+          confirmLabel="Delete permanently"
+          variant="danger"
+          loading={actionLoading}
+          onConfirm={handleDelete}
+          onClose={() => !actionLoading && setShowDelete(false)}
+        />
+      )}
+
+      {showDeactivate && (
+        <ConfirmModal
+          title="Deactivate post?"
+          message="This will hide the post from the mini-app marketplace and remove it from Telegram channels. You can activate it again later."
+          confirmLabel="Deactivate"
+          variant="danger"
+          loading={actionLoading}
+          onConfirm={() => handleToggleActive(false)}
+          onClose={() => !actionLoading && setShowDeactivate(false)}
+        />
+      )}
+
+      {showActivate && (
+        <ConfirmModal
+          title="Activate post?"
+          message="This will make the post visible in the mini-app again and republish it to Telegram channels."
+          confirmLabel="Activate"
+          variant="success"
+          loading={actionLoading}
+          onConfirm={() => handleToggleActive(true)}
+          onClose={() => !actionLoading && setShowActivate(false)}
         />
       )}
     </div>

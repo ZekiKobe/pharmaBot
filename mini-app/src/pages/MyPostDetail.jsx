@@ -173,6 +173,12 @@ export default function MyPostDetail() {
           <p className="text-sm font-bold text-tg-text">{post.contactPhone}</p>
         </div>
 
+        {post.approvalStatus === 'approved' && post.isActive === false && (
+          <p className="mt-4 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-400">
+            This post is hidden from the marketplace by an admin.
+          </p>
+        )}
+
         {post.rejectionReason && (
           <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
             {post.rejectionReason}

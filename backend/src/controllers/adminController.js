@@ -1,6 +1,6 @@
 const Post = require('../models/Post');
 const Payment = require('../models/Payment');
-const { approvePost, rejectPost } = require('../services/postService');
+const { approvePost, rejectPost, adminDeletePost, setPostActive } = require('../services/postService');
 
 const getDashboardStats = async (_req, res, next) => {
   try {
@@ -86,6 +86,8 @@ const getAllPosts = async (req, res, next) => {
     const filter = {};
     if (req.query.approvalStatus) filter.approvalStatus = req.query.approvalStatus;
     if (req.query.type) filter.type = req.query.type;
+    if (req.query.isActive === 'true') filter.isActive = { $ne: false };
+    if (req.query.isActive === 'false') filter.isActive = false;
 
     const [posts, total] = await Promise.all([
       Post.find(filter)
@@ -143,6 +145,41 @@ const reject = async (req, res, next) => {
     const post = await rejectPost(req.params.id, reason.trim(), req.admin._id);
     res.json({ success: true, data: post, message: 'Post rejected' });
   } catch (error) {
+    next(error);
+  }
+};
+
+const deletePost = async (req, res, next) => {
+  try {
+    await adminDeletePost(req.params.id);
+    res.json({ success: true, message: 'Post permanently deleted' });
+  } catch (error) {
+    if (error.message === 'Post not found') {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
+const toggleActive = async (req, res, next) => {
+  try {
+    const { isActive } = req.body;
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({ success: false, message: 'isActive must be true or false' });
+    }
+    const post = await setPostActive(req.params.id, isActive);
+    res.json({
+      success: true,
+      data: post,
+      message: isActive ? 'Post activated and visible again' : 'Post deactivated and hidden from marketplace',
+    });
+  } catch (error) {
+    if (error.message === 'Post not found') {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    if (error.message === 'Only approved posts can be activated or deactivated') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     next(error);
   }
 };
@@ -220,5 +257,7 @@ module.exports = {
   getPostDetails,
   approve,
   reject,
+  deletePost,
+  toggleActive,
   getAnalytics,
 };

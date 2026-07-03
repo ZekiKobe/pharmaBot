@@ -69,7 +69,21 @@ const publishPostToChannels = async (post, bot) => {
   return published;
 };
 
+const unpublishPostFromChannels = async (post, bot) => {
+  if (!bot || !post.publishedChannels?.length) return;
+
+  for (const pub of post.publishedChannels) {
+    try {
+      await bot.telegram.deleteMessage(pub.telegramChannelId, Number(pub.messageId));
+      logger.info(`Removed post ${post._id} from ${pub.channelName || pub.telegramChannelId}`);
+    } catch (err) {
+      logger.warn(`Failed to delete channel message: ${err.message}`);
+    }
+  }
+};
+
 module.exports = {
   getActiveChannels,
   publishPostToChannels,
+  unpublishPostFromChannels,
 };
