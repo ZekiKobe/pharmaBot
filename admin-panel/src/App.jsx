@@ -1,0 +1,30 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Pending from './pages/Pending';
+import AllPosts from './pages/AllPosts';
+import PostDetail from './pages/PostDetail';
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="pending" element={<Pending />} />
+              <Route path="posts" element={<AllPosts />} />
+              <Route path="posts/:id" element={<PostDetail />} />
+            </Route>
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}

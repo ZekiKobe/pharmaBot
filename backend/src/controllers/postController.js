@@ -1,0 +1,174 @@
+const Post = require('../models/Post');
+const {
+  createPost,
+  submitPaymentScreenshot,
+  getPaymentInfo,
+} = require('../services/postService');
+
+const createBuyerPost = async (req, res, next) => {
+  try {
+    const post = await createPost(req.body, 'buyer');
+    res.status(201).json({
+      success: true,
+      data: post,
+      paymentInfo: getPaymentInfo(),
+      message: 'Buyer request created. Please complete payment.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createSellerPost = async (req, res, next) => {
+  try {
+    const post = await createPost(
+      { ...req.body, expiryDate: new Date(req.body.expiryDate) },
+      'seller'
+    );
+    res.status(201).json({
+      success: true,
+      data: post,
+      paymentInfo: getPaymentInfo(),
+      message: 'Seller listing created. Please complete payment.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const uploadPayment = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Payment screenshot is required' });
+    }
+
+    const { postId, telegramId } = req.body;
+    if (!postId || !telegramId) {
+      return res.status(400).json({ success: false, message: 'postId and telegramId are required' });
+    }
+
+    const screenshotPath = `/uploads/${req.file.filename}`;
+    const result = await submitPaymentScreenshot(postId, screenshotPath, telegramId);
+
+    res.json({
+      success: true,
+      data: result.post,
+      message: 'Payment screenshot uploaded. Waiting for admin approval.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getApprovedPosts = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const skip = (page - 1) * limit;
+
+    const filter = { approvalStatus: 'approved' };
+    if (req.query.type) filter.type = req.query.type;
+    if (req.query.city) filter.city = new RegExp(req.query.city, 'i');
+    if (req.query.category) filter.category = req.query.category;
+    if (req.query.search) {
+      filter.$text = { $search: req.query.search };
+    }
+
+    const [posts, total] = await Promise.all([
+      Post.find(filter)
+        .sort({ approvedAt: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'username fullName'),
+      Post.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data: posts,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getPostById = async (req, res, next) => {
+  try {
+    const post = await Post.findOne({
+      _id: req.params.id,
+      approvalStatus: 'approved',
+    }).populate('userId', 'username fullName');
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    res.json({ success: true, data: post });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getMyPosts = async (req, res, next) => {
+  try {
+    const { telegramId } = req.params;
+    const User = require('../models/User');
+    const user = await User.findOne({ telegramId: String(telegramId) });
+
+    if (!user) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const posts = await Post.find({ userId: user._id }).sort({ createdAt: -1 });
+    res.json({ success: true, data: posts });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getPostStatus = async (req, res, next) => {
+  try {
+    const { postId, telegramId } = req.query;
+    const User = require('../models/User');
+    const user = await User.findOne({ telegramId: String(telegramId) });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const post = await Post.findOne({ _id: postId, userId: user._id });
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    res.json({ success: true, data: post });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getPaymentInstructions = async (_req, res) => {
+  res.json({ success: true, data: getPaymentInfo() });
+};
+
+const getCities = async (_req, res, next) => {
+  try {
+    const cities = await Post.distinct('city', { approvalStatus: 'approved' });
+    res.json({ success: true, data: cities.sort() });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  createBuyerPost,
+  createSellerPost,
+  uploadPayment,
+  getApprovedPosts,
+  getPostById,
+  getMyPosts,
+  getPostStatus,
+  getPaymentInstructions,
+  getCities,
+};

@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Uploads & runtime data
+uploads/
+backend/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.parcel-cache/
+.vite/
+*.tsbuildinfo
+
+# Misc
+*.pem

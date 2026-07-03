@@ -1,0 +1,44 @@
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+async function request(endpoint, options = {}) {
+  const url = `${API_URL}${endpoint}`;
+  const config = {
+    headers: {},
+    ...options,
+  };
+
+  if (!(options.body instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+
+  const response = await fetch(url, config);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Request failed');
+  }
+
+  return data;
+}
+
+export const api = {
+  getPosts: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/posts?${query}`);
+  },
+  getPost: (id) => request(`/posts/${id}`),
+  getMyPosts: (telegramId) => request(`/posts/user/${telegramId}`),
+  getPostStatus: (postId, telegramId) =>
+    request(`/posts/status?postId=${postId}&telegramId=${telegramId}`),
+  getPaymentInfo: () => request('/posts/payment-info'),
+  getCategories: () => request('/categories'),
+  getCities: () => request('/posts/cities'),
+  createBuyerPost: (data) =>
+    request('/posts/buyer', { method: 'POST', body: JSON.stringify(data) }),
+  createSellerPost: (data) =>
+    request('/posts/seller', { method: 'POST', body: JSON.stringify(data) }),
+  uploadPayment: (formData) =>
+    request('/posts/payment', { method: 'POST', body: formData }),
+};
+
+export default api;
