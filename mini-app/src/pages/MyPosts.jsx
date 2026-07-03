@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
+import ConfirmModal from '../components/ConfirmModal';
 
 const statusStyle = {
   draft: 'bg-tg-hint/15 text-tg-hint',
@@ -16,6 +17,7 @@ export default function MyPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [postToDelete, setPostToDelete] = useState(null);
 
   const loadPosts = () => {
     if (!telegramId) return;
@@ -31,17 +33,22 @@ export default function MyPosts() {
     loadPosts();
   }, [telegramId]);
 
-  const handleDelete = async (e, post) => {
+  const handleDeleteClick = (e, post) => {
     e.preventDefault();
     e.stopPropagation();
     if (post.approvalStatus === 'approved') return;
-    if (!window.confirm(`Delete "${post.medicineName}"?`)) return;
+    setPostToDelete(post);
+  };
 
-    setDeletingId(post._id);
+  const handleDeleteConfirm = async () => {
+    if (!postToDelete || deletingId) return;
+
+    setDeletingId(postToDelete._id);
     haptic('medium');
     try {
-      await api.deleteMyPost(post._id, telegramId);
+      await api.deleteMyPost(postToDelete._id, telegramId);
       haptic('success');
+      setPostToDelete(null);
       loadPosts();
     } catch (err) {
       haptic('error');
@@ -131,7 +138,7 @@ export default function MyPosts() {
                     </Link>
                     <button
                       type="button"
-                      onClick={(e) => handleDelete(e, post)}
+                      onClick={(e) => handleDeleteClick(e, post)}
                       disabled={deletingId === post._id}
                       className="flex-1 rounded-xl border border-red-500/40 bg-red-500/10 py-2 text-xs font-semibold text-red-400"
                     >
@@ -143,6 +150,17 @@ export default function MyPosts() {
             );
           })}
         </div>
+      )}
+
+      {postToDelete && (
+        <ConfirmModal
+          title="Delete post?"
+          message={`"${postToDelete.medicineName}" will be permanently removed. This cannot be undone.`}
+          confirmLabel="Delete"
+          loading={deletingId === postToDelete._id}
+          onConfirm={handleDeleteConfirm}
+          onClose={() => !deletingId && setPostToDelete(null)}
+        />
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
 import { IconArrowLeft, IconMapPin } from '../components/Icons';
+import ConfirmModal from '../components/ConfirmModal';
 
 const statusLabel = {
   draft: { text: 'Draft', color: 'text-tg-hint' },
@@ -19,6 +20,7 @@ export default function MyPostDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const loadPost = () => {
     if (!telegramId) return;
@@ -36,9 +38,8 @@ export default function MyPostDetail() {
 
   const canModify = post && post.approvalStatus !== 'approved';
 
-  const handleDelete = async () => {
+  const handleDeleteConfirm = async () => {
     if (!canModify || deleting) return;
-    if (!window.confirm('Delete this post?')) return;
 
     setDeleting(true);
     haptic('medium');
@@ -49,6 +50,7 @@ export default function MyPostDetail() {
     } catch (err) {
       haptic('error');
       setError(err.message);
+      setShowDeleteModal(false);
     } finally {
       setDeleting(false);
     }
@@ -182,15 +184,26 @@ export default function MyPostDetail() {
             </Link>
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteModal(true)}
               disabled={deleting}
               className="rounded-xl border border-red-500/40 bg-red-500/10 py-2.5 text-xs font-semibold text-red-400"
             >
-              {deleting ? 'Deleting...' : 'Delete'}
+              Delete
             </button>
           </div>
         )}
       </div>
+
+      {showDeleteModal && (
+        <ConfirmModal
+          title="Delete post?"
+          message={`"${post.medicineName}" will be permanently removed. This cannot be undone.`}
+          confirmLabel="Delete"
+          loading={deleting}
+          onConfirm={handleDeleteConfirm}
+          onClose={() => !deleting && setShowDeleteModal(false)}
+        />
+      )}
     </div>
   );
 }
