@@ -13,13 +13,12 @@ const navItems = [
 export default function Layout() {
   const location = useLocation();
   const { webApp } = useTelegram();
-  const hideNav = location.pathname.includes('/payment');
   const isHome = location.pathname === '/';
   const inTelegram = Boolean(webApp);
 
   return (
     <div className="min-h-screen bg-tg-bg text-tg-text">
-      {!hideNav && !inTelegram && (
+      {!inTelegram && (
         <header
           className={`sticky top-0 z-40 border-b bg-tg-card ${
             isHome ? '' : 'shadow-sm'
@@ -45,8 +44,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {!hideNav && (
-        <nav
+      <nav
           className="fixed inset-x-0 bottom-0 z-[100] bg-tg-card pt-1.5"
           style={{
             borderTop: '1px solid color-mix(in srgb, var(--tg-theme-hint-color) 22%, transparent)',
@@ -78,7 +76,6 @@ export default function Layout() {
             ))}
           </div>
         </nav>
-      )}
     </div>
   );
 }

@@ -10,9 +10,8 @@ const CITIES = ['Addis Ababa', 'Adama', 'Bahir Dar', 'Dire Dawa', 'Hawassa', 'Me
 
 export default function SellerForm() {
   const navigate = useNavigate();
-  const { user, telegramId, haptic, webApp } = useTelegram();
+  const { user, telegramId, haptic } = useTelegram();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
   const submittedRef = useRef(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
@@ -39,7 +38,6 @@ export default function SellerForm() {
 
     setLoading(true);
     setError('');
-    setSuccess('');
     setFieldErrors({});
     haptic('medium');
 
@@ -65,16 +63,7 @@ export default function SellerForm() {
 
       submittedRef.current = true;
       haptic('success');
-
-      const message = res.message || 'Listing created! Continue to payment.';
-      setSuccess(message);
-
-      const goToPayment = () => navigate(`/payment/${postId}`);
-      if (webApp?.showAlert) {
-        webApp.showAlert(message, goToPayment);
-      } else {
-        goToPayment();
-      }
+      navigate(`/payment/${postId}`);
     } catch (err) {
       haptic('error');
       setError(err.message || 'Something went wrong');
@@ -150,18 +139,6 @@ export default function SellerForm() {
           <input name="telegramUsername" value={form.telegramUsername} onChange={set} className={fieldClass(fieldErrors, 'telegramUsername')} />
           <FieldError message={getFieldError(fieldErrors, 'telegramUsername')} />
         </div>
-
-        {success && (
-          <div
-            className="rounded-xl px-4 py-3 text-sm font-medium"
-            style={{
-              backgroundColor: 'color-mix(in srgb, #34d399 15%, var(--tg-theme-secondary-bg-color))',
-              color: '#34d399',
-            }}
-          >
-            {success}
-          </div>
-        )}
 
         {(error || Object.keys(fieldErrors).length > 0) && (
           <ErrorSummary message={error} fieldErrors={fieldErrors} />

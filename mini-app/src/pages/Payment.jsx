@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
-import { ErrorSummary } from '../components/FieldError';
-import FieldError from '../components/FieldError';
+import { IconArrowLeft } from '../components/Icons';
+import FieldError, { ErrorSummary } from '../components/FieldError';
 import { getFieldError } from '../utils/apiError';
 
 export default function Payment() {
@@ -63,7 +63,10 @@ export default function Payment() {
 
   if (submitted) {
     return (
-      <div className="app-container flex min-h-[80vh] flex-col items-center justify-center text-center">
+      <div className="app-container flex min-h-[60vh] flex-col items-center justify-center text-center">
+        <button onClick={() => navigate(-1)} className="mb-4 flex w-full items-center gap-1 self-start text-sm font-medium text-tg-hint">
+          <IconArrowLeft className="h-4 w-4" /> Back
+        </button>
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/15 text-3xl">⏳</div>
         <h1 className="text-xl font-bold text-tg-text">Awaiting Approval</h1>
         <p className="mt-2 max-w-xs text-sm text-tg-hint">Your payment is being reviewed. You'll get a Telegram notification once approved.</p>
@@ -74,6 +77,9 @@ export default function Payment() {
 
   return (
     <div className="app-container">
+      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-1 text-sm font-medium text-tg-hint">
+        <IconArrowLeft className="h-4 w-4" /> Back
+      </button>
       <h1 className="text-xl font-bold text-tg-text">Payment</h1>
       <p className="mt-1 text-sm text-tg-hint">Complete payment to publish your post</p>
 
