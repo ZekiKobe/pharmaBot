@@ -7,7 +7,7 @@ const navItems = [
   { to: '/search', label: 'Search', icon: IconSearch },
   { to: '/buyer', label: 'Buy', icon: IconBuy },
   { to: '/seller', label: 'Sell', icon: IconSell },
-  { to: '/my-posts', label: 'Posts', icon: IconList },
+  { to: '/my-posts', label: 'My Posts', icon: IconList },
 ];
 
 export default function Layout() {
@@ -58,7 +58,7 @@ export default function Layout() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `flex min-w-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1 text-[10px] font-semibold no-underline transition-colors ${
+                  `flex min-w-[3rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1.5 py-1 text-[9px] font-semibold leading-tight no-underline transition-colors ${
                     isActive ? 'text-tg-link' : 'text-tg-hint'
                   }`
                 }

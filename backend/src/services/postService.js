@@ -158,6 +158,77 @@ const rejectPost = async (postId, reason, adminId) => {
   return post;
 };
 
+const getOwnedPost = async (postId, telegramId) => {
+  const user = await User.findOne({ telegramId: String(telegramId) });
+  if (!user) throw new Error('User not found');
+
+  const post = await Post.findOne({ _id: postId, userId: user._id });
+  if (!post) throw new Error('Post not found');
+
+  return { user, post };
+};
+
+const assertPostEditable = (post) => {
+  if (post.approvalStatus === 'approved') {
+    throw new Error('Approved posts cannot be changed');
+  }
+};
+
+const updateMyPost = async (postId, telegramId, data) => {
+  const { user, post } = await getOwnedPost(postId, telegramId);
+  assertPostEditable(post);
+
+  const fields = {
+    medicineName: data.medicineName,
+    strength: data.strength,
+    quantity: data.quantity,
+    city: data.city,
+    description: data.description,
+    contactPhone: data.contactPhone,
+    telegramUsername: data.telegramUsername,
+    category: data.category,
+  };
+
+  if (post.type === 'seller') {
+    if (!data.brand?.trim()) throw new Error('Brand is required');
+    if (!data.strength?.trim()) throw new Error('Strength is required');
+    if (data.price == null || data.price === '' || Number(data.price) <= 0) {
+      throw new Error('Price must be greater than 0');
+    }
+    fields.brand = data.brand;
+    fields.price = Number(data.price);
+    if (data.expiryDate) fields.expiryDate = new Date(data.expiryDate);
+  }
+
+  if (!data.medicineName?.trim()) throw new Error('Medicine name is required');
+  if (!data.quantity?.trim()) throw new Error('Quantity is required');
+  if (!data.city?.trim()) throw new Error('City is required');
+  if (!data.contactPhone?.trim()) throw new Error('Contact phone is required');
+
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value !== undefined) post[key] = value;
+  });
+
+  if (data.fullName || data.telegramUsername || data.contactPhone) {
+    user.fullName = data.fullName || user.fullName;
+    user.username = data.telegramUsername || user.username;
+    user.phoneNumber = data.contactPhone || user.phoneNumber;
+    await user.save();
+  }
+
+  await post.save();
+  return post;
+};
+
+const deleteMyPost = async (postId, telegramId) => {
+  const { post } = await getOwnedPost(postId, telegramId);
+  assertPostEditable(post);
+
+  await Payment.deleteMany({ postId: post._id });
+  await Post.findByIdAndDelete(post._id);
+  return post;
+};
+
 const getPaymentInfo = () => ({
   cbeAccountNumber: process.env.CBE_ACCOUNT_NUMBER || '1000262694392',
   telebirrPhone: process.env.TELEBIRR_PHONE || '0993676861',
@@ -171,6 +242,9 @@ module.exports = {
   submitPaymentScreenshot,
   approvePost,
   rejectPost,
+  getOwnedPost,
+  updateMyPost,
+  deleteMyPost,
   getPaymentInfo,
   POST_PRICE,
 };

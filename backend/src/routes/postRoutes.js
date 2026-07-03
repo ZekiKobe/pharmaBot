@@ -6,6 +6,9 @@ const {
   getApprovedPosts,
   getPostById,
   getMyPosts,
+  getMyPostById,
+  updateMyPostHandler,
+  deleteMyPostHandler,
   getPostStatus,
   getPaymentInstructions,
   getCities,
@@ -26,6 +29,9 @@ router.get('/cities', getCities);
 router.get('/', postQueryRules, validate, getApprovedPosts);
 router.get('/status', getPostStatus);
 router.get('/user/:telegramId', getMyPosts);
+router.get('/my/:id', getMyPostById);
+router.patch('/my/:id', updateMyPostHandler);
+router.delete('/my/:id', deleteMyPostHandler);
 router.get('/:id', getPostById);
 
 router.post('/buyer', buyerPostRules, validate, createBuyerPost);

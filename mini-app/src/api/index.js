@@ -41,6 +41,11 @@ export const api = {
   getMyPosts: (telegramId) => request(`/posts/user/${telegramId}`),
   getPostStatus: (postId, telegramId) =>
     request(`/posts/status?postId=${postId}&telegramId=${telegramId}`),
+  getMyPost: (id, telegramId) => request(`/posts/my/${id}?telegramId=${telegramId}`),
+  updateMyPost: (id, data) =>
+    request(`/posts/my/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteMyPost: (id, telegramId) =>
+    request(`/posts/my/${id}`, { method: 'DELETE', body: JSON.stringify({ telegramId }) }),
   getPaymentInfo: () => request('/posts/payment-info'),
   getCategories: () => request('/categories'),
   getCities: () => request('/posts/cities'),

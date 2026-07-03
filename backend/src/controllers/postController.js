@@ -3,6 +3,9 @@ const {
   createPost,
   submitPaymentScreenshot,
   getPaymentInfo,
+  getOwnedPost,
+  updateMyPost,
+  deleteMyPost,
 } = require('../services/postService');
 
 const createBuyerPost = async (req, res, next) => {
@@ -163,6 +166,64 @@ const getPaymentInstructions = async (_req, res) => {
   res.json({ success: true, data: getPaymentInfo() });
 };
 
+const getMyPostById = async (req, res, next) => {
+  try {
+    const { telegramId } = req.query;
+    if (!telegramId) {
+      return res.status(400).json({ success: false, message: 'Telegram ID is required' });
+    }
+    const { post } = await getOwnedPost(req.params.id, telegramId);
+    res.json({ success: true, data: post });
+  } catch (error) {
+    if (error.message === 'Post not found' || error.message === 'User not found') {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
+const updateMyPostHandler = async (req, res, next) => {
+  try {
+    const { telegramId } = req.body;
+    if (!telegramId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Telegram user ID is missing',
+        fieldErrors: { telegramId: 'Telegram user ID is missing. Open this app from Telegram.' },
+      });
+    }
+    const post = await updateMyPost(req.params.id, telegramId, req.body);
+    res.json({ success: true, data: post, message: 'Post updated' });
+  } catch (error) {
+    if (error.message === 'Approved posts cannot be changed') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+    if (error.message === 'Post not found' || error.message === 'User not found') {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
+const deleteMyPostHandler = async (req, res, next) => {
+  try {
+    const telegramId = req.body.telegramId || req.query.telegramId;
+    if (!telegramId) {
+      return res.status(400).json({ success: false, message: 'Telegram ID is required' });
+    }
+    await deleteMyPost(req.params.id, telegramId);
+    res.json({ success: true, message: 'Post deleted' });
+  } catch (error) {
+    if (error.message === 'Approved posts cannot be changed') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+    if (error.message === 'Post not found' || error.message === 'User not found') {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
 const getCities = async (_req, res, next) => {
   try {
     const cities = await Post.distinct('city', { approvalStatus: 'approved' });
@@ -179,6 +240,9 @@ module.exports = {
   getApprovedPosts,
   getPostById,
   getMyPosts,
+  getMyPostById,
+  updateMyPostHandler,
+  deleteMyPostHandler,
   getPostStatus,
   getPaymentInstructions,
   getCities,

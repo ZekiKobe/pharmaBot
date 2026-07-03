@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRef, useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
 import { IconArrowLeft } from '../components/Icons';
@@ -10,8 +10,11 @@ const CITIES = ['Addis Ababa', 'Adama', 'Bahir Dar', 'Dire Dawa', 'Hawassa', 'Me
 
 export default function BuyerForm() {
   const navigate = useNavigate();
+  const { postId } = useParams();
+  const isEdit = Boolean(postId);
   const { user, telegramId, haptic } = useTelegram();
   const [loading, setLoading] = useState(false);
+  const [loadingPost, setLoadingPost] = useState(isEdit);
   const submittedRef = useRef(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
@@ -32,6 +35,26 @@ export default function BuyerForm() {
     }
   };
 
+  useEffect(() => {
+    if (!isEdit || !telegramId) return;
+    api
+      .getMyPost(postId, telegramId)
+      .then((res) => {
+        const post = res.data;
+        setForm({
+          medicineName: post.medicineName || '',
+          strength: post.strength || '',
+          quantity: post.quantity || '',
+          city: post.city || '',
+          description: post.description || '',
+          contactPhone: post.contactPhone || '',
+          telegramUsername: post.telegramUsername || user?.username || '',
+        });
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoadingPost(false));
+  }, [isEdit, postId, telegramId, user?.username]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading || submittedRef.current) return;
@@ -49,11 +72,20 @@ export default function BuyerForm() {
     }
 
     try {
-      const res = await api.createBuyerPost({
+      const payload = {
         ...form,
         telegramId,
         fullName: [user?.first_name, user?.last_name].filter(Boolean).join(' '),
-      });
+      };
+
+      if (isEdit) {
+        await api.updateMyPost(postId, payload);
+        haptic('success');
+        navigate(`/my-posts/${postId}`, { replace: true });
+        return;
+      }
+
+      const res = await api.createBuyerPost(payload);
 
       const postId = res?.data?._id;
       if (!postId) {
@@ -72,13 +104,23 @@ export default function BuyerForm() {
     }
   };
 
+  if (loadingPost) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-200 border-t-teal-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
-      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-1 text-sm font-medium text-tg-hint">
+      <button onClick={() => navigate(isEdit ? `/my-posts/${postId}` : -1)} className="mb-4 flex items-center gap-1 text-sm font-medium text-tg-hint">
         <IconArrowLeft className="h-4 w-4" /> Back
       </button>
-      <h1 className="text-xl font-bold text-tg-text">Buyer Request</h1>
-      <p className="mt-1 text-sm text-tg-hint">Post your medicine need for ETB 20</p>
+      <h1 className="text-xl font-bold text-tg-text">{isEdit ? 'Edit Buyer Request' : 'Buyer Request'}</h1>
+      <p className="mt-1 text-sm text-tg-hint">
+        {isEdit ? 'Update your medicine request' : 'Post your medicine need for ETB 20'}
+      </p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
@@ -125,7 +167,7 @@ export default function BuyerForm() {
         )}
 
         <button type="submit" disabled={loading} className="btn-app-primary">
-          {loading ? 'Submitting...' : 'Continue to Payment'}
+          {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Continue to Payment'}
         </button>
       </form>
     </div>
