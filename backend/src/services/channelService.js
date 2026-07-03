@@ -39,7 +39,7 @@ const publishPostToChannels = async (post, bot) => {
   for (const channel of channels) {
     try {
       const sent = await bot.telegram.sendMessage(channel.telegramChannelId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
       });
       published.push({
         channelId: channel._id || undefined,

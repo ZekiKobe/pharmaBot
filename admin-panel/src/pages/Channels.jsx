@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { AlertBanner } from '../components/ConfirmModal';
+import ConfirmModal from '../components/ConfirmModal';
+import { useToast } from '../components/Toast';
 import { IconCheck, IconX } from '../components/Icons';
 
 const emptyForm = {
@@ -13,12 +14,14 @@ const emptyForm = {
 };
 
 export default function Channels() {
+  const { showToast } = useToast();
   const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState('');
 
   const loadChannels = () => {
@@ -56,36 +59,38 @@ export default function Channels() {
     e.preventDefault();
     setSaving(true);
     setError('');
-    setMessage('');
 
     try {
       if (editingId) {
         await api.updateChannel(editingId, form);
-        setMessage('Channel updated');
+        showToast('Channel updated');
       } else {
         await api.createChannel(form);
-        setMessage('Channel added');
+        showToast('Channel added');
       }
       resetForm();
       loadChannels();
     } catch (err) {
       setError(err.message);
+      showToast(err.message, 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Remove this channel? Approved posts already published will not be deleted from Telegram.')) {
-      return;
-    }
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleteLoading(true);
     try {
-      await api.deleteChannel(id);
-      setMessage('Channel removed');
-      if (editingId === id) resetForm();
+      await api.deleteChannel(deleteId);
+      showToast('Channel removed');
+      if (editingId === deleteId) resetForm();
+      setDeleteId(null);
       loadChannels();
     } catch (err) {
-      setError(err.message);
+      showToast(err.message, 'error');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -168,8 +173,6 @@ export default function Channels() {
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
 
-      {message && <AlertBanner type="success" message={message} onDismiss={() => setMessage('')} />}
-
       <div className="card overflow-hidden">
         <div className="border-b border-slate-100 px-5 py-4">
           <h3 className="font-bold text-slate-900">Configured channels</h3>
@@ -210,7 +213,7 @@ export default function Channels() {
                   <button type="button" onClick={() => startEdit(channel)} className="btn-secondary py-2 text-xs">
                     Edit
                   </button>
-                  <button type="button" onClick={() => handleDelete(channel._id)} className="btn-danger py-2 text-xs">
+                  <button type="button" onClick={() => setDeleteId(channel._id)} className="btn-danger py-2 text-xs">
                     Remove
                   </button>
                 </div>
@@ -227,6 +230,18 @@ export default function Channels() {
           get notified when a user submits payment. They can approve or reject from the bot or this admin panel.
         </p>
       </div>
+
+      {deleteId && (
+        <ConfirmModal
+          title="Remove channel?"
+          message="Approved posts already published will not be deleted from Telegram."
+          confirmLabel="Remove"
+          variant="danger"
+          loading={deleteLoading}
+          onConfirm={handleDelete}
+          onClose={() => setDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

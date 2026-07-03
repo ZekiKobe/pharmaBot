@@ -176,14 +176,14 @@ const createBot = () => {
         try {
           await ctx.replyWithPhoto(`${baseUrl}${post.paymentScreenshot}`, {
             caption: text,
-            parse_mode: 'Markdown',
+            parse_mode: 'HTML',
             ...keyboard,
           });
         } catch {
-          await ctx.reply(text, { parse_mode: 'Markdown', ...keyboard });
+          await ctx.reply(text, { parse_mode: 'HTML', ...keyboard });
         }
       } else {
-        await ctx.reply(text, { parse_mode: 'Markdown', ...keyboard });
+        await ctx.reply(text, { parse_mode: 'HTML', ...keyboard });
       }
     }
   });

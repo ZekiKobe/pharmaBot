@@ -4,6 +4,7 @@ const User = require('../models/User');
 const { getBot } = require('../bot/botInstance');
 const { publishPostToChannels } = require('./channelService');
 const { notifyAdminsPendingPost } = require('./adminNotifyService');
+const { escapeHtml } = require('./telegramService');
 const logger = require('../utils/logger');
 
 const POST_PRICE = parseInt(process.env.POST_PRICE, 10) || 20;
@@ -113,8 +114,8 @@ const approvePost = async (postId, adminId) => {
     try {
       await bot.telegram.sendMessage(
         post.userId.telegramId,
-        `✅ Your ${post.type === 'buyer' ? 'buyer request' : 'seller listing'} for *${post.medicineName}* has been approved and published!`,
-        { parse_mode: 'Markdown' }
+        `✅ Your ${post.type === 'buyer' ? 'buyer request' : 'seller listing'} for <b>${escapeHtml(post.medicineName)}</b> has been approved and published!`,
+        { parse_mode: 'HTML' }
       );
     } catch (err) {
       logger.warn(`Failed to notify user: ${err.message}`);
@@ -146,8 +147,8 @@ const rejectPost = async (postId, reason, adminId) => {
     try {
       await bot.telegram.sendMessage(
         post.userId.telegramId,
-        `❌ Your post for *${post.medicineName}* was rejected.\n\n*Reason:* ${reason}`,
-        { parse_mode: 'Markdown' }
+        `❌ Your post for <b>${escapeHtml(post.medicineName)}</b> was rejected.\n\n<b>Reason:</b> ${escapeHtml(reason)}`,
+        { parse_mode: 'HTML' }
       );
     } catch (err) {
       logger.warn(`Failed to notify user: ${err.message}`);

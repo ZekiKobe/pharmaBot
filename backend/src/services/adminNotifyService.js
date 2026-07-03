@@ -1,6 +1,7 @@
 const { Markup } = require('telegraf');
 const Post = require('../models/Post');
 const { getBot } = require('../bot/botInstance');
+const { escapeHtml } = require('./telegramService');
 const logger = require('../utils/logger');
 
 const getAdminTelegramIds = () =>
@@ -17,16 +18,16 @@ const buildPendingReviewMessage = (post) => {
   const user = post.userId;
 
   return (
-    `🆕 *New post awaiting review*\n\n` +
+    `🆕 <b>New post awaiting review</b>\n\n` +
     `${typeLabel}\n\n` +
-    `*Medicine:* ${post.medicineName}\n` +
-    (post.strength ? `*Strength:* ${post.strength}\n` : '') +
-    `*City:* ${post.city}\n` +
-    `*Quantity:* ${post.quantity}\n` +
-    (post.price ? `*Price:* ETB ${post.price}\n` : '') +
-    (user?.fullName ? `*User:* ${user.fullName}\n` : '') +
-    (user?.username ? `*Telegram:* @${user.username}\n` : '') +
-    `*Submitted:* ${new Date(post.createdAt).toLocaleString()}\n\n` +
+    `<b>Medicine:</b> ${escapeHtml(post.medicineName)}\n` +
+    (post.strength ? `<b>Strength:</b> ${escapeHtml(post.strength)}\n` : '') +
+    `<b>City:</b> ${escapeHtml(post.city)}\n` +
+    `<b>Quantity:</b> ${escapeHtml(post.quantity)}\n` +
+    (post.price ? `<b>Price:</b> ETB ${escapeHtml(post.price)}\n` : '') +
+    (user?.fullName ? `<b>User:</b> ${escapeHtml(user.fullName)}\n` : '') +
+    (user?.username ? `<b>Telegram:</b> @${escapeHtml(user.username)}\n` : '') +
+    `<b>Submitted:</b> ${escapeHtml(new Date(post.createdAt).toLocaleString())}\n\n` +
     `Approve or reject here, or use the admin panel.`
   );
 };
@@ -60,11 +61,11 @@ const notifyAdminsPendingPost = async (postId) => {
       if (post.paymentScreenshot) {
         await bot.telegram.sendPhoto(adminId, `${baseUrl}${post.paymentScreenshot}`, {
           caption: text,
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
           ...keyboard,
         });
       } else {
-        await bot.telegram.sendMessage(adminId, text, { parse_mode: 'Markdown', ...keyboard });
+        await bot.telegram.sendMessage(adminId, text, { parse_mode: 'HTML', ...keyboard });
       }
     } catch (err) {
       logger.warn(`Failed to notify admin ${adminId}: ${err.message}`);

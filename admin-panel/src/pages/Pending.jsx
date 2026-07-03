@@ -2,16 +2,17 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import PostTable from '../components/PostTable';
 import RejectModal from '../components/RejectModal';
-import ConfirmModal, { AlertBanner } from '../components/ConfirmModal';
+import ConfirmModal from '../components/ConfirmModal';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useToast } from '../components/Toast';
 
 export default function Pending() {
+  const { showToast } = useToast();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rejectPost, setRejectPost] = useState(null);
   const [confirmApprove, setConfirmApprove] = useState(null);
   const [approveLoading, setApproveLoading] = useState(false);
-  const [message, setMessage] = useState('');
 
   const loadPosts = () => {
     setLoading(true);
@@ -24,11 +25,12 @@ export default function Pending() {
     setApproveLoading(true);
     try {
       await api.approvePost(confirmApprove);
-      setMessage('Post approved and published to Telegram');
+      showToast('Post approved and published to Telegram');
       setConfirmApprove(null);
       loadPosts();
-    } catch (err) { alert(err.message); }
-    finally { setApproveLoading(false); }
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally { setApproveLoading(false); }
   };
 
   return (
@@ -40,8 +42,6 @@ export default function Pending() {
         </p>
       </div>
 
-      {message && <AlertBanner type="success" message={message} onDismiss={() => setMessage('')} />}
-
       {loading ? <LoadingSpinner /> : (
         <PostTable posts={posts} showActions onApprove={setConfirmApprove} onReject={setRejectPost} />
       )}
@@ -49,7 +49,21 @@ export default function Pending() {
       {confirmApprove && (
         <ConfirmModal title="Approve & publish?" message="This post will be published to all active Telegram channels and the user will be notified." confirmLabel="Approve" variant="success" loading={approveLoading} onConfirm={handleApprove} onClose={() => setConfirmApprove(null)} />
       )}
-      {rejectPost && <RejectModal post={rejectPost} onClose={() => setRejectPost(null)} onConfirm={async (reason) => { await api.rejectPost(rejectPost._id, reason); setMessage('Post rejected'); loadPosts(); }} />}
+      {rejectPost && (
+        <RejectModal
+          post={rejectPost}
+          onClose={() => setRejectPost(null)}
+          onConfirm={async (reason) => {
+            try {
+              await api.rejectPost(rejectPost._id, reason);
+              showToast('Post rejected');
+              loadPosts();
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

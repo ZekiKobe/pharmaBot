@@ -5,6 +5,7 @@ import StatusBadge, { TypeBadge } from '../components/StatusBadge';
 import RejectModal from '../components/RejectModal';
 import ConfirmModal from '../components/ConfirmModal';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useToast } from '../components/Toast';
 import { IconArrowLeft, IconCheck, IconX } from '../components/Icons';
 
 function DetailRow({ label, value, highlight }) {
@@ -20,6 +21,7 @@ function DetailRow({ label, value, highlight }) {
 
 export default function PostDetail() {
   const { id } = useParams();
+  const { showToast } = useToast();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,17 +47,23 @@ export default function PostDetail() {
     try {
       await api.approvePost(id);
       setShowApprove(false);
+      showToast('Post approved and published to Telegram');
       loadPost();
     } catch (err) {
-      alert(err.message);
+      showToast(err.message, 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleReject = async (reason) => {
-    await api.rejectPost(id, reason);
-    loadPost();
+    try {
+      await api.rejectPost(id, reason);
+      showToast('Post rejected');
+      loadPost();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
   };
 
   if (loading) return <LoadingSpinner label="Loading post details..." />;
