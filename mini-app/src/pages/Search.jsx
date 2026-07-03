@@ -43,22 +43,22 @@ export default function Search() {
   };
 
   const Chip = ({ active, onClick, children }) => (
-    <button type="button" onClick={onClick} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all ${active ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20' : 'border border-slate-200 bg-tg-card text-slate-600'}`}>
+    <button type="button" onClick={onClick} className={`chip ${active ? 'chip-active' : ''}`}>
       {children}
     </button>
   );
 
   return (
     <div className="app-container">
-      <h1 className="text-xl font-bold text-slate-900">Search</h1>
-      <p className="mt-1 text-sm text-slate-500">Find medicines across Ethiopia</p>
+      <h1 className="text-xl font-bold text-tg-text">Search</h1>
+      <p className="mt-1 text-sm text-tg-hint">Find medicines across Ethiopia</p>
 
       <form onSubmit={handleSearch} className="mt-5 flex gap-2">
         <div className="relative flex-1">
-          <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tg-hint" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Medicine name..." className="app-input pl-10" />
         </div>
-        <button type="submit" className="shrink-0 rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white">Go</button>
+        <button type="submit" className="btn-app-primary shrink-0 px-4 py-3">Go</button>
       </form>
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
@@ -87,7 +87,7 @@ export default function Search() {
         {loading ? (
           <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-200 border-t-teal-600" /></div>
         ) : posts.length === 0 ? (
-          <div className="app-card py-10 text-center text-sm text-slate-400">No results found</div>
+          <div className="app-card empty-state">No results found</div>
         ) : posts.map((post) => <PostCard key={post._id} post={post} />)}
       </div>
     </div>

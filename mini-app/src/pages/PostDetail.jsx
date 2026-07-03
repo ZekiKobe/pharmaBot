@@ -30,16 +30,24 @@ export default function PostDetail() {
 
   return (
     <div className="app-container">
-      <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-500">
+      <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-tg-hint">
         <IconArrowLeft className="h-4 w-4" /> Back
       </Link>
 
       <div className="app-card">
-        <span className={`inline-block rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase ${isBuyer ? 'bg-sky-100 text-sky-700' : 'bg-teal-100 text-teal-700'}`}>
+        <span
+          className="inline-block rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase"
+          style={{
+            backgroundColor: isBuyer
+              ? 'color-mix(in srgb, #38bdf8 18%, var(--tg-theme-secondary-bg-color))'
+              : 'color-mix(in srgb, var(--tg-theme-button-color) 18%, var(--tg-theme-secondary-bg-color))',
+            color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color)',
+          }}
+        >
           {isBuyer ? 'Buyer Request' : 'For Sale'}
         </span>
-        <h1 className="mt-3 text-xl font-bold text-slate-900">
-          {post.medicineName}{post.strength && <span className="text-slate-500"> {post.strength}</span>}
+        <h1 className="mt-3 text-xl font-bold text-tg-text">
+          {post.medicineName}{post.strength && <span className="text-tg-hint"> {post.strength}</span>}
         </h1>
 
         <div className="mt-5 space-y-3">
@@ -48,21 +56,27 @@ export default function PostDetail() {
           {!isBuyer && post.price && <Row label="Price" value={`ETB ${post.price}`} highlight />}
           {!isBuyer && post.expiryDate && <Row label="Expiry" value={new Date(post.expiryDate).toLocaleDateString()} />}
           <div className="flex items-center gap-2 text-sm">
-            <IconMapPin className="h-4 w-4 text-teal-600" />
-            <span className="font-semibold text-slate-900">{post.city}</span>
+            <IconMapPin className="h-4 w-4 text-tg-link" />
+            <span className="font-semibold text-tg-text">{post.city}</span>
           </div>
           {post.description && (
-            <div className="rounded-xl bg-slate-50 p-3">
-              <p className="text-[10px] font-bold uppercase text-slate-400">Description</p>
-              <p className="mt-1 text-sm text-slate-700">{post.description}</p>
+            <div
+              className="rounded-xl p-3"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--tg-theme-hint-color) 10%, var(--tg-theme-secondary-bg-color))' }}
+            >
+              <p className="text-[10px] font-bold uppercase text-tg-hint">Description</p>
+              <p className="mt-1 text-sm text-tg-text">{post.description}</p>
             </div>
           )}
         </div>
 
-        <div className="mt-6 rounded-xl bg-teal-50 p-4">
-          <p className="text-[10px] font-bold uppercase text-teal-600">Contact</p>
-          {post.telegramUsername && <p className="mt-1 text-sm font-semibold text-teal-700">@{post.telegramUsername.replace('@', '')}</p>}
-          <p className="text-sm font-bold text-slate-900">{post.contactPhone}</p>
+        <div
+          className="mt-6 rounded-xl p-4"
+          style={{ backgroundColor: 'color-mix(in srgb, var(--tg-theme-button-color) 12%, var(--tg-theme-secondary-bg-color))' }}
+        >
+          <p className="text-[10px] font-bold uppercase text-tg-link">Contact</p>
+          {post.telegramUsername && <p className="mt-1 text-sm font-semibold text-tg-link">@{post.telegramUsername.replace('@', '')}</p>}
+          <p className="text-sm font-bold text-tg-text">{post.contactPhone}</p>
         </div>
       </div>
     </div>
@@ -72,8 +86,8 @@ export default function PostDetail() {
 function Row({ label, value, highlight }) {
   return (
     <div className="flex justify-between text-sm">
-      <span className="text-slate-400">{label}</span>
-      <span className={`font-semibold ${highlight ? 'text-emerald-600' : 'text-slate-900'}`}>{value}</span>
+      <span className="text-tg-hint">{label}</span>
+      <span className={`font-semibold ${highlight ? 'text-emerald-400' : 'text-tg-text'}`}>{value}</span>
     </div>
   );
 }

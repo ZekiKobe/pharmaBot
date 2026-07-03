@@ -51,6 +51,23 @@ export function TelegramProvider({ children }) {
     if (tg) {
       tg.ready();
       tg.expand();
+
+      const params = tg.themeParams || {};
+      const root = document.documentElement;
+
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) {
+          root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, value);
+        }
+      });
+
+      const bg = params.bg_color || '#0f172a';
+      const secondary = params.secondary_bg_color || '#1e293b';
+
+      if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor(secondary);
+      if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor(bg);
+      if (typeof tg.setBottomBarColor === 'function') tg.setBottomBarColor(secondary);
+
       setWebApp(tg);
 
       let resolved = resolveTelegramUser(tg);

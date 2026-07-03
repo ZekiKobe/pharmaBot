@@ -64,11 +64,11 @@ export default function BuyerForm() {
 
   return (
     <div className="app-container">
-      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-1 text-sm font-medium text-slate-500">
+      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-1 text-sm font-medium text-tg-hint">
         <IconArrowLeft className="h-4 w-4" /> Back
       </button>
-      <h1 className="text-xl font-bold text-slate-900">Buyer Request</h1>
-      <p className="mt-1 text-sm text-slate-500">Post your medicine need for ETB 20</p>
+      <h1 className="text-xl font-bold text-tg-text">Buyer Request</h1>
+      <p className="mt-1 text-sm text-tg-hint">Post your medicine need for ETB 20</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>

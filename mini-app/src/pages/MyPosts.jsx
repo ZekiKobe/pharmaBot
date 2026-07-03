@@ -4,10 +4,10 @@ import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
 
 const statusStyle = {
-  draft: 'bg-slate-100 text-slate-600',
-  pending: 'bg-amber-100 text-amber-800',
-  approved: 'bg-emerald-100 text-emerald-800',
-  rejected: 'bg-red-100 text-red-800',
+  draft: 'bg-tg-hint/15 text-tg-hint',
+  pending: 'bg-amber-500/15 text-amber-400',
+  approved: 'bg-emerald-500/15 text-emerald-400',
+  rejected: 'bg-red-500/15 text-red-400',
 };
 
 export default function MyPosts() {
@@ -31,12 +31,12 @@ export default function MyPosts() {
 
   return (
     <div className="app-container">
-      <h1 className="text-xl font-bold text-slate-900">My Posts</h1>
-      <p className="mt-1 text-sm text-slate-500">Track your submissions</p>
+      <h1 className="text-xl font-bold text-tg-text">My Posts</h1>
+      <p className="mt-1 text-sm text-tg-hint">Track your submissions</p>
 
       {posts.length === 0 ? (
         <div className="app-card mt-6 py-10 text-center">
-          <p className="text-sm text-slate-500">No posts yet</p>
+          <p className="text-sm text-tg-hint">No posts yet</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Link to="/buyer" className="btn-app-primary py-2.5 text-xs">Request</Link>
             <Link to="/seller" className="btn-app-secondary py-2.5 text-xs">Sell</Link>
@@ -47,16 +47,24 @@ export default function MyPosts() {
           {posts.map((post) => (
             <div key={post._id} className="app-card">
               <div className="flex items-center justify-between">
-                <span className={`rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase ${post.type === 'buyer' ? 'bg-sky-100 text-sky-700' : 'bg-teal-100 text-teal-700'}`}>
+                <span
+                  className="rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase"
+                  style={{
+                    backgroundColor: post.type === 'buyer'
+                      ? 'color-mix(in srgb, #38bdf8 18%, var(--tg-theme-secondary-bg-color))'
+                      : 'color-mix(in srgb, var(--tg-theme-button-color) 18%, var(--tg-theme-secondary-bg-color))',
+                    color: post.type === 'buyer' ? '#38bdf8' : 'var(--tg-theme-link-color)',
+                  }}
+                >
                   {post.type}
                 </span>
                 <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize ${statusStyle[post.approvalStatus]}`}>
                   {post.approvalStatus}
                 </span>
               </div>
-              <h3 className="mt-2 font-bold text-slate-900">{post.medicineName}</h3>
-              <p className="mt-1 text-xs text-slate-500">{post.city} · {post.quantity}</p>
-              {post.rejectionReason && <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{post.rejectionReason}</p>}
+              <h3 className="mt-2 font-bold text-tg-text">{post.medicineName}</h3>
+              <p className="mt-1 text-xs text-tg-hint">{post.city} · {post.quantity}</p>
+              {post.rejectionReason && <p className="mt-2 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{post.rejectionReason}</p>}
               {post.approvalStatus === 'draft' && (
                 <Link to={`/payment/${post._id}`} className="btn-app-primary mt-3 py-2.5 text-xs">Complete Payment</Link>
               )}
