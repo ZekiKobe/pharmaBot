@@ -14,109 +14,76 @@ export default function Payment() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    api.getPaymentInfo().then((res) => setPaymentInfo(res.data));
-  }, []);
-
-  const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    if (selected) {
-      setFile(selected);
-      setPreview(URL.createObjectURL(selected));
-    }
-  };
+  useEffect(() => { api.getPaymentInfo().then((res) => setPaymentInfo(res.data)); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) {
-      setError('Please upload payment screenshot');
-      return;
-    }
-
+    if (!file) { setError('Please upload payment screenshot'); return; }
     setLoading(true);
     setError('');
     haptic('medium');
-
     try {
-      const formData = new FormData();
-      formData.append('screenshot', file);
-      formData.append('postId', postId);
-      formData.append('telegramId', telegramId);
-
-      await api.uploadPayment(formData);
+      const fd = new FormData();
+      fd.append('screenshot', file);
+      fd.append('postId', postId);
+      fd.append('telegramId', telegramId);
+      await api.uploadPayment(fd);
       haptic('success');
       setSubmitted(true);
-    } catch (err) {
-      setError(err.message);
-      haptic('error');
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.message); haptic('error'); }
+    finally { setLoading(false); }
   };
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-xl px-4 pb-20 pt-10 text-center">
-        <div className="mb-4 text-6xl">⏳</div>
-        <h1 className="mb-4 text-2xl font-bold">Waiting for Approval</h1>
-        <p className="mb-6 text-tg-hint">
-          Your payment screenshot has been submitted. An admin will review your post shortly.
-          You will receive a notification via the bot once approved.
-        </p>
-        <button
-          onClick={() => navigate('/my-posts')}
-          className="w-full rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white active:opacity-80"
-        >
-          View My Posts
-        </button>
+      <div className="app-container flex min-h-[80vh] flex-col items-center justify-center text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-3xl">⏳</div>
+        <h1 className="text-xl font-bold text-slate-900">Awaiting Approval</h1>
+        <p className="mt-2 max-w-xs text-sm text-slate-500">Your payment is being reviewed. You'll get a Telegram notification once approved.</p>
+        <button onClick={() => navigate('/my-posts')} className="btn-app-primary mt-8 max-w-xs">View My Posts</button>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-xl px-4 pb-20 pt-4">
-      <h1 className="mb-4 text-2xl font-bold">💳 Payment</h1>
+    <div className="app-container">
+      <h1 className="text-xl font-bold text-slate-900">Payment</h1>
+      <p className="mt-1 text-sm text-slate-500">Complete payment to publish your post</p>
 
       {paymentInfo && (
-        <div className="mb-4 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 p-5 text-white">
-          <h3 className="mb-3 font-semibold">Pay ETB {paymentInfo.amount}</h3>
-          <div className="mb-2 rounded-lg bg-white/15 p-3">
-            <strong className="mb-1 block text-xs opacity-90">CBE Account Number</strong>
-            <span className="text-lg font-semibold tracking-wide">{paymentInfo.cbeAccountNumber}</span>
-          </div>
-          <div className="rounded-lg bg-white/15 p-3">
-            <strong className="mb-1 block text-xs opacity-90">Telebirr Phone</strong>
-            <span className="text-lg font-semibold tracking-wide">{paymentInfo.telebirrPhone}</span>
+        <div className="mt-6 overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 to-teal-800 p-5 text-white shadow-lg shadow-teal-600/20">
+          <p className="text-sm font-medium text-teal-100">Amount to pay</p>
+          <p className="text-3xl font-extrabold">ETB {paymentInfo.amount}</p>
+          <div className="mt-4 space-y-2">
+            <div className="rounded-xl bg-white/15 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-teal-200">CBE Account</p>
+              <p className="font-mono text-sm font-semibold">{paymentInfo.cbeAccountNumber}</p>
+            </div>
+            <div className="rounded-xl bg-white/15 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-teal-200">Telebirr</p>
+              <p className="font-mono text-sm font-semibold">{paymentInfo.telebirrPhone}</p>
+            </div>
           </div>
         </div>
       )}
 
-      <p className="mb-4 text-tg-hint">
-        After making the payment, upload your screenshot below.
-      </p>
-
-      <form onSubmit={handleSubmit}>
-        <label className="block cursor-pointer rounded-xl border-2 border-dashed border-gray-200 p-6 text-center transition-colors hover:border-blue-500">
-          <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+      <form onSubmit={handleSubmit} className="mt-6">
+        <label className="flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed border-slate-200 bg-tg-card p-8 transition-colors hover:border-teal-400">
+          <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) { setFile(f); setPreview(URL.createObjectURL(f)); } }} className="hidden" />
           {preview ? (
-            <img src={preview} alt="Payment preview" className="mx-auto mt-0 max-w-full rounded-xl" />
+            <img src={preview} alt="Preview" className="max-h-48 rounded-xl object-contain" />
           ) : (
             <>
-              <div className="mb-2 text-4xl">📷</div>
-              <p>Tap to upload payment screenshot</p>
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-600">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" /></svg>
+              </div>
+              <p className="text-sm font-semibold text-slate-700">Upload screenshot</p>
+              <p className="mt-1 text-xs text-slate-400">Tap to select image</p>
             </>
           )}
         </label>
-
-        {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={loading || !file}
-          className="mt-5 w-full rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white active:opacity-80 disabled:opacity-50"
-        >
-          {loading ? 'Uploading...' : 'Submit Payment'}
-        </button>
+        {error && <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
+        <button type="submit" disabled={loading || !file} className="btn-app-primary mt-5">{loading ? 'Uploading...' : 'Submit Payment'}</button>
       </form>
     </div>
   );

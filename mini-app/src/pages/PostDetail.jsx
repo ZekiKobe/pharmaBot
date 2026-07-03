@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api';
+import { IconArrowLeft, IconMapPin } from '../components/Icons';
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -9,21 +10,18 @@ export default function PostDetail() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.getPost(id)
-      .then((res) => setPost(res.data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    api.getPost(id).then((res) => setPost(res.data)).catch((err) => setError(err.message)).finally(() => setLoading(false));
   }, [id]);
 
   if (loading) {
-    return <div className="p-10 text-center text-tg-hint">Loading...</div>;
+    return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-200 border-t-teal-600" /></div>;
   }
 
   if (error || !post) {
     return (
-      <div className="mx-auto max-w-xl px-4 pb-20 pt-10 text-center">
-        <p className="mb-4 text-red-500">{error || 'Post not found'}</p>
-        <Link to="/" className="text-blue-600 underline">Back to Home</Link>
+      <div className="app-container text-center">
+        <p className="text-red-500">{error || 'Not found'}</p>
+        <Link to="/" className="mt-4 inline-block text-sm font-semibold text-teal-600">Back home</Link>
       </div>
     );
   }
@@ -31,66 +29,51 @@ export default function PostDetail() {
   const isBuyer = post.type === 'buyer';
 
   return (
-    <div className="mx-auto max-w-xl px-4 pb-20 pt-4">
-      <Link to="/" className="mb-4 inline-block text-sm text-blue-600">← Back</Link>
+    <div className="app-container">
+      <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-500">
+        <IconArrowLeft className="h-4 w-4" /> Back
+      </Link>
 
-      <div className="rounded-xl border border-gray-200 bg-tg-card p-5 shadow-sm">
-        <span
-          className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-            isBuyer ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-          }`}
-        >
-          {isBuyer ? 'Buyer Request' : 'Seller Listing'}
+      <div className="app-card">
+        <span className={`inline-block rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase ${isBuyer ? 'bg-sky-100 text-sky-700' : 'bg-teal-100 text-teal-700'}`}>
+          {isBuyer ? 'Buyer Request' : 'For Sale'}
         </span>
-
-        <h1 className="mt-3 text-2xl font-bold">
-          {post.medicineName}
-          {post.strength && ` ${post.strength}`}
+        <h1 className="mt-3 text-xl font-bold text-slate-900">
+          {post.medicineName}{post.strength && <span className="text-slate-500"> {post.strength}</span>}
         </h1>
 
-        <div className="mt-4 space-y-3">
-          {post.brand && (
-            <div>
-              <span className="text-sm text-tg-hint">Brand</span>
-              <p className="font-medium">{post.brand}</p>
-            </div>
-          )}
-          <div>
-            <span className="text-sm text-tg-hint">Quantity</span>
-            <p className="font-medium">{post.quantity}</p>
-          </div>
-          {!isBuyer && post.price && (
-            <div>
-              <span className="text-sm text-tg-hint">Price</span>
-              <p className="text-lg font-semibold text-emerald-600">ETB {post.price}</p>
-            </div>
-          )}
-          {!isBuyer && post.expiryDate && (
-            <div>
-              <span className="text-sm text-tg-hint">Expiry Date</span>
-              <p className="font-medium">{new Date(post.expiryDate).toLocaleDateString()}</p>
-            </div>
-          )}
-          <div>
-            <span className="text-sm text-tg-hint">City</span>
-            <p className="font-medium">📍 {post.city}</p>
+        <div className="mt-5 space-y-3">
+          {post.brand && <Row label="Brand" value={post.brand} />}
+          <Row label="Quantity" value={post.quantity} />
+          {!isBuyer && post.price && <Row label="Price" value={`ETB ${post.price}`} highlight />}
+          {!isBuyer && post.expiryDate && <Row label="Expiry" value={new Date(post.expiryDate).toLocaleDateString()} />}
+          <div className="flex items-center gap-2 text-sm">
+            <IconMapPin className="h-4 w-4 text-teal-600" />
+            <span className="font-semibold text-slate-900">{post.city}</span>
           </div>
           {post.description && (
-            <div>
-              <span className="text-sm text-tg-hint">Description</span>
-              <p className="font-medium">{post.description}</p>
+            <div className="rounded-xl bg-slate-50 p-3">
+              <p className="text-[10px] font-bold uppercase text-slate-400">Description</p>
+              <p className="mt-1 text-sm text-slate-700">{post.description}</p>
             </div>
           )}
         </div>
 
-        <div className="mt-6 rounded-xl bg-gray-50 p-4">
-          <h3 className="mb-2 font-semibold">Contact</h3>
-          {post.telegramUsername && (
-            <p className="text-blue-600">@{post.telegramUsername.replace('@', '')}</p>
-          )}
-          <p className="font-medium">{post.contactPhone}</p>
+        <div className="mt-6 rounded-xl bg-teal-50 p-4">
+          <p className="text-[10px] font-bold uppercase text-teal-600">Contact</p>
+          {post.telegramUsername && <p className="mt-1 text-sm font-semibold text-teal-700">@{post.telegramUsername.replace('@', '')}</p>}
+          <p className="text-sm font-bold text-slate-900">{post.contactPhone}</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Row({ label, value, highlight }) {
+  return (
+    <div className="flex justify-between text-sm">
+      <span className="text-slate-400">{label}</span>
+      <span className={`font-semibold ${highlight ? 'text-emerald-600' : 'text-slate-900'}`}>{value}</span>
     </div>
   );
 }

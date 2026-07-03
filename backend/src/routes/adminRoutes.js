@@ -6,6 +6,7 @@ const {
   getPostDetails,
   approve,
   reject,
+  getAnalytics,
 } = require('../controllers/adminController');
 const { authAdmin } = require('../middleware/auth');
 
@@ -14,6 +15,7 @@ const router = express.Router();
 router.use(authAdmin);
 
 router.get('/dashboard', getDashboardStats);
+router.get('/analytics', getAnalytics);
 router.get('/posts/pending', getPendingPosts);
 router.get('/posts', getAllPosts);
 router.get('/posts/:id', getPostDetails);

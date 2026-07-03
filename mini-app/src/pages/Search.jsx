@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../api';
 import PostCard from '../components/PostCard';
+import { IconSearch } from '../components/Icons';
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -15,130 +16,80 @@ export default function Search() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.getCities(), api.getCategories()])
-      .then(([citiesRes, catsRes]) => {
-        setCities(citiesRes.data);
-        setCategories(catsRes.data);
-      })
-      .catch(console.error);
+    Promise.all([api.getCities(), api.getCategories()]).then(([c, cats]) => {
+      setCities(c.data);
+      setCategories(cats.data);
+    });
   }, []);
 
   useEffect(() => {
-    async function search() {
-      setLoading(true);
-      try {
-        const params = {};
-        if (query) params.search = query;
-        if (city) params.city = city;
-        if (type) params.type = type;
-        if (category) params.category = category;
-
-        const res = await api.getPosts(params);
-        setPosts(res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    search();
-  }, [query, city, type, category]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
+    setLoading(true);
     const params = {};
     if (query) params.search = query;
     if (city) params.city = city;
     if (type) params.type = type;
     if (category) params.category = category;
-    setSearchParams(params);
+    api.getPosts(params).then((res) => setPosts(res.data)).catch(console.error).finally(() => setLoading(false));
+  }, [query, city, type, category]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const p = {};
+    if (query) p.search = query;
+    if (city) p.city = city;
+    if (type) p.type = type;
+    if (category) p.category = category;
+    setSearchParams(p);
   };
 
-  return (
-    <div className="mx-auto max-w-xl px-4 pb-20 pt-4">
-      <h1 className="mb-4 text-2xl font-bold">🔍 Search Medicines</h1>
+  const Chip = ({ active, onClick, children }) => (
+    <button type="button" onClick={onClick} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all ${active ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20' : 'border border-slate-200 bg-tg-card text-slate-600'}`}>
+      {children}
+    </button>
+  );
 
-      <form onSubmit={handleSearch} className="mb-4 flex gap-2">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search medicine name..."
-          className="flex-1 rounded-xl border border-gray-200 bg-tg-card px-3 py-3 focus:border-blue-500 focus:outline-none"
-        />
-        <button
-          type="submit"
-          className="rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white"
-        >
-          Search
-        </button>
+  return (
+    <div className="app-container">
+      <h1 className="text-xl font-bold text-slate-900">Search</h1>
+      <p className="mt-1 text-sm text-slate-500">Find medicines across Ethiopia</p>
+
+      <form onSubmit={handleSearch} className="mt-5 flex gap-2">
+        <div className="relative flex-1">
+          <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Medicine name..." className="app-input pl-10" />
+        </div>
+        <button type="submit" className="shrink-0 rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white">Go</button>
       </form>
 
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
-        {['', 'buyer', 'seller'].map((t) => (
-          <button
-            key={t || 'all'}
-            type="button"
-            onClick={() => setType(t)}
-            className={`shrink-0 rounded-full border px-4 py-2 text-sm ${
-              type === t
-                ? 'border-blue-600 bg-blue-600 text-white'
-                : 'border-gray-200 bg-tg-card'
-            }`}
-          >
-            {t === '' ? 'All' : t === 'buyer' ? 'Buyer' : 'Seller'}
-          </button>
-        ))}
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+        <Chip active={!type} onClick={() => setType('')}>All</Chip>
+        <Chip active={type === 'buyer'} onClick={() => setType('buyer')}>Buyer</Chip>
+        <Chip active={type === 'seller'} onClick={() => setType('seller')}>Seller</Chip>
       </div>
 
       {cities.length > 0 && (
-        <select
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          className="mb-4 w-full rounded-xl border border-gray-200 bg-tg-card px-3 py-3 focus:border-blue-500 focus:outline-none"
-        >
-          <option value="">All Cities</option>
-          {cities.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
+        <select value={city} onChange={(e) => setCity(e.target.value)} className="app-input mt-3">
+          <option value="">All cities</option>
+          {cities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       )}
 
       {categories.length > 0 && (
-        <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
-          <button
-            type="button"
-            onClick={() => setCategory('')}
-            className={`shrink-0 rounded-full border px-4 py-2 text-sm ${
-              !category ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-200 bg-tg-card'
-            }`}
-          >
-            All Categories
-          </button>
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <Chip active={!category} onClick={() => setCategory('')}>All categories</Chip>
           {categories.map((cat) => (
-            <button
-              key={cat._id}
-              type="button"
-              onClick={() => setCategory(cat.slug)}
-              className={`shrink-0 rounded-full border px-4 py-2 text-sm ${
-                category === cat.slug
-                  ? 'border-blue-600 bg-blue-600 text-white'
-                  : 'border-gray-200 bg-tg-card'
-              }`}
-            >
-              {cat.name}
-            </button>
+            <Chip key={cat._id} active={category === cat.slug} onClick={() => setCategory(cat.slug)}>{cat.name}</Chip>
           ))}
         </div>
       )}
 
-      {loading ? (
-        <div className="p-10 text-center text-tg-hint">Searching...</div>
-      ) : posts.length === 0 ? (
-        <div className="px-5 py-10 text-center text-tg-hint">No results found</div>
-      ) : (
-        posts.map((post) => <PostCard key={post._id} post={post} />)
-      )}
+      <div className="mt-5">
+        {loading ? (
+          <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-200 border-t-teal-600" /></div>
+        ) : posts.length === 0 ? (
+          <div className="app-card py-10 text-center text-sm text-slate-400">No results found</div>
+        ) : posts.map((post) => <PostCard key={post._id} post={post} />)}
+      </div>
     </div>
   );
 }

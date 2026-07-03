@@ -48,6 +48,8 @@ export const api = {
 
   getDashboard: () => request('/admin/dashboard'),
 
+  getAnalytics: () => request('/admin/analytics'),
+
   getPendingPosts: (page = 1) => request(`/admin/posts/pending?page=${page}`),
 
   getPosts: (params = {}) => {

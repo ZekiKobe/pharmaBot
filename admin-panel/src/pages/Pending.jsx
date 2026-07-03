@@ -3,7 +3,6 @@ import { api } from '../api';
 import PostTable from '../components/PostTable';
 import RejectModal from '../components/RejectModal';
 import ConfirmModal, { AlertBanner } from '../components/ConfirmModal';
-import PageHeader from '../components/PageHeader';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Pending() {
@@ -16,78 +15,38 @@ export default function Pending() {
 
   const loadPosts = () => {
     setLoading(true);
-    api
-      .getPendingPosts()
-      .then((res) => setPosts(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    api.getPendingPosts().then((res) => setPosts(res.data)).catch(console.error).finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  useEffect(() => { loadPosts(); }, []);
 
   const handleApprove = async () => {
     setApproveLoading(true);
     try {
       await api.approvePost(confirmApprove);
-      setMessage('Post approved and published to Telegram channel');
+      setMessage('Post approved and published to Telegram');
       setConfirmApprove(null);
       loadPosts();
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setApproveLoading(false);
-    }
-  };
-
-  const handleReject = async (reason) => {
-    await api.rejectPost(rejectPost._id, reason);
-    setMessage('Post has been rejected and user notified');
-    loadPosts();
+    } catch (err) { alert(err.message); }
+    finally { setApproveLoading(false); }
   };
 
   return (
     <div>
-      <PageHeader
-        title="Pending Review"
-        description={`${posts.length} post${posts.length !== 1 ? 's' : ''} awaiting payment verification and approval`}
-      />
+      <div className="mb-6 flex items-center justify-between">
+        <p className="text-sm text-slate-500">{posts.length} post{posts.length !== 1 ? 's' : ''} awaiting review</p>
+      </div>
 
-      {message && (
-        <AlertBanner type="success" message={message} onDismiss={() => setMessage('')} />
-      )}
+      {message && <AlertBanner type="success" message={message} onDismiss={() => setMessage('')} />}
 
-      {loading ? (
-        <LoadingSpinner label="Loading pending posts..." />
-      ) : (
-        <PostTable
-          posts={posts}
-          showActions
-          onApprove={setConfirmApprove}
-          onReject={setRejectPost}
-        />
+      {loading ? <LoadingSpinner /> : (
+        <PostTable posts={posts} showActions onApprove={setConfirmApprove} onReject={setRejectPost} />
       )}
 
       {confirmApprove && (
-        <ConfirmModal
-          title="Approve post?"
-          message="This will publish the post to the Telegram channel and notify the user. This action cannot be undone."
-          confirmLabel="Approve & Publish"
-          variant="success"
-          loading={approveLoading}
-          onConfirm={handleApprove}
-          onClose={() => setConfirmApprove(null)}
-        />
+        <ConfirmModal title="Approve & publish?" message="This post will be published to the Telegram channel and the user will be notified." confirmLabel="Approve" variant="success" loading={approveLoading} onConfirm={handleApprove} onClose={() => setConfirmApprove(null)} />
       )}
-
-      {rejectPost && (
-        <RejectModal
-          post={rejectPost}
-          onClose={() => setRejectPost(null)}
-          onConfirm={handleReject}
-        />
-      )}
+      {rejectPost && <RejectModal post={rejectPost} onClose={() => setRejectPost(null)} onConfirm={async (reason) => { await api.rejectPost(rejectPost._id, reason); setMessage('Post rejected'); loadPosts(); }} />}
     </div>
   );
 }

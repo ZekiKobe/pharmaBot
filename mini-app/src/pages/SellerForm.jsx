@@ -2,15 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
+import { IconArrowLeft } from '../components/Icons';
 
-const ETHIOPIAN_CITIES = [
-  'Addis Ababa', 'Adama', 'Bahir Dar', 'Dire Dawa', 'Hawassa',
-  'Mekelle', 'Gondar', 'Jimma', 'Dessie', 'Harar',
-];
-
-const inputClass =
-  'w-full rounded-xl border border-gray-200 bg-tg-card px-3 py-3 text-tg-text focus:border-blue-500 focus:outline-none';
-const labelClass = 'mb-1.5 block text-sm font-medium text-tg-hint';
+const CITIES = ['Addis Ababa', 'Adama', 'Bahir Dar', 'Dire Dawa', 'Hawassa', 'Mekelle', 'Gondar', 'Jimma', 'Dessie', 'Harar'];
 
 export default function SellerForm() {
   const navigate = useNavigate();
@@ -18,171 +12,50 @@ export default function SellerForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
-    medicineName: '',
-    brand: '',
-    strength: '',
-    quantity: '',
-    price: '',
-    expiryDate: '',
-    city: '',
-    description: '',
-    contactPhone: '',
-    telegramUsername: user?.username || '',
+    medicineName: '', brand: '', strength: '', quantity: '', price: '', expiryDate: '',
+    city: '', description: '', contactPhone: '', telegramUsername: user?.username || '',
   });
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const set = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
     haptic('medium');
-
     try {
-      const res = await api.createSellerPost({
-        ...form,
-        price: parseFloat(form.price),
-        telegramId,
-        fullName: [user?.first_name, user?.last_name].filter(Boolean).join(' '),
-      });
+      const res = await api.createSellerPost({ ...form, price: parseFloat(form.price), telegramId, fullName: [user?.first_name, user?.last_name].filter(Boolean).join(' ') });
       haptic('success');
       navigate(`/payment/${res.data._id}`);
-    } catch (err) {
-      setError(err.message);
-      haptic('error');
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.message); haptic('error'); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div className="mx-auto max-w-xl px-4 pb-20 pt-4">
-      <h1 className="mb-4 text-2xl font-bold">💊 Seller Listing</h1>
-      <p className="mb-5 text-tg-hint">
-        List your medicine for sale. Posting fee: ETB 20.
-      </p>
+    <div className="app-container">
+      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-1 text-sm font-medium text-slate-500">
+        <IconArrowLeft className="h-4 w-4" /> Back
+      </button>
+      <h1 className="text-xl font-bold text-slate-900">Seller Listing</h1>
+      <p className="mt-1 text-sm text-slate-500">List your medicine for ETB 20</p>
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className={labelClass}>Medicine Name *</label>
-          <input
-            name="medicineName"
-            value={form.medicineName}
-            onChange={handleChange}
-            required
-            className={inputClass}
-          />
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <div><label className="app-label">Medicine Name *</label><input name="medicineName" value={form.medicineName} onChange={set} required className="app-input" /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="app-label">Brand *</label><input name="brand" value={form.brand} onChange={set} required className="app-input" /></div>
+          <div><label className="app-label">Strength *</label><input name="strength" value={form.strength} onChange={set} required className="app-input" placeholder="500mg" /></div>
         </div>
-
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelClass}>Brand *</label>
-            <input name="brand" value={form.brand} onChange={handleChange} required className={inputClass} />
-          </div>
-          <div>
-            <label className={labelClass}>Strength *</label>
-            <input
-              name="strength"
-              value={form.strength}
-              onChange={handleChange}
-              required
-              placeholder="500mg"
-              className={inputClass}
-            />
-          </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="app-label">Quantity *</label><input name="quantity" value={form.quantity} onChange={set} required className="app-input" /></div>
+          <div><label className="app-label">Price (ETB) *</label><input name="price" type="number" value={form.price} onChange={set} required min="1" className="app-input" /></div>
         </div>
-
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelClass}>Quantity *</label>
-            <input
-              name="quantity"
-              value={form.quantity}
-              onChange={handleChange}
-              required
-              placeholder="100 Boxes"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Price (ETB) *</label>
-            <input
-              name="price"
-              type="number"
-              value={form.price}
-              onChange={handleChange}
-              required
-              min="1"
-              className={inputClass}
-            />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className={labelClass}>Expiry Date *</label>
-          <input
-            name="expiryDate"
-            type="date"
-            value={form.expiryDate}
-            onChange={handleChange}
-            required
-            className={inputClass}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className={labelClass}>City *</label>
-          <select name="city" value={form.city} onChange={handleChange} required className={inputClass}>
-            <option value="">Select city</option>
-            {ETHIOPIAN_CITIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className={labelClass}>Description</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            className={`${inputClass} min-h-20 resize-y`}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className={labelClass}>Contact Phone *</label>
-          <input
-            name="contactPhone"
-            value={form.contactPhone}
-            onChange={handleChange}
-            required
-            type="tel"
-            className={inputClass}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className={labelClass}>Telegram Username</label>
-          <input
-            name="telegramUsername"
-            value={form.telegramUsername}
-            onChange={handleChange}
-            className={inputClass}
-          />
-        </div>
-
-        {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white active:opacity-80 disabled:opacity-50"
-        >
-          {loading ? 'Submitting...' : 'Continue to Payment'}
-        </button>
+        <div><label className="app-label">Expiry Date *</label><input name="expiryDate" type="date" value={form.expiryDate} onChange={set} required className="app-input" /></div>
+        <div><label className="app-label">City *</label><select name="city" value={form.city} onChange={set} required className="app-input"><option value="">Select city</option>{CITIES.map((c) => <option key={c} value={c}>{c}</option>)}</select></div>
+        <div><label className="app-label">Description</label><textarea name="description" value={form.description} onChange={set} className="app-input min-h-24 resize-none" /></div>
+        <div><label className="app-label">Phone *</label><input name="contactPhone" value={form.contactPhone} onChange={set} required type="tel" className="app-input" /></div>
+        <div><label className="app-label">Telegram Username</label><input name="telegramUsername" value={form.telegramUsername} onChange={set} className="app-input" /></div>
+        {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
+        <button type="submit" disabled={loading} className="btn-app-primary">{loading ? 'Submitting...' : 'Continue to Payment'}</button>
       </form>
     </div>
   );

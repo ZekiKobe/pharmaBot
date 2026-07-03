@@ -147,6 +147,72 @@ const reject = async (req, res, next) => {
   }
 };
 
+const getAnalytics = async (_req, res, next) => {
+  try {
+    const days = 7;
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - (days - 1));
+    startDate.setHours(0, 0, 0, 0);
+
+    const [postsAgg, revenueAgg, byType, byStatus] = await Promise.all([
+      Post.aggregate([
+        { $match: { createdAt: { $gte: startDate } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Payment.aggregate([
+        { $match: { status: 'approved', reviewedAt: { $gte: startDate } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$reviewedAt' } },
+            total: { $sum: '$amount' },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Post.aggregate([{ $group: { _id: '$type', count: { $sum: 1 } } }]),
+      Post.aggregate([{ $group: { _id: '$approvalStatus', count: { $sum: 1 } } }]),
+    ]);
+
+    const postsByDay = [];
+    const revenueByDay = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().split('T')[0];
+      const label = d.toLocaleDateString('en-US', { weekday: 'short' });
+      postsByDay.push({
+        date: key,
+        label,
+        count: postsAgg.find((p) => p._id === key)?.count || 0,
+      });
+      revenueByDay.push({
+        date: key,
+        label,
+        amount: revenueAgg.find((r) => r._id === key)?.total || 0,
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        postsByDay,
+        revenueByDay,
+        byType: byType.map((t) => ({ name: t._id, value: t.count })),
+        byStatus: byStatus.map((s) => ({ name: s._id, value: s.count })),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getPendingPosts,
@@ -154,4 +220,5 @@ module.exports = {
   getPostDetails,
   approve,
   reject,
+  getAnalytics,
 };

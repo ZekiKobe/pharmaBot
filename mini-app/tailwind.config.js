@@ -1,16 +1,19 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+      },
       colors: {
         tg: {
-          bg: 'var(--tg-theme-bg-color, #f5f7fa)',
-          text: 'var(--tg-theme-text-color, #1a1a2e)',
-          hint: 'var(--tg-theme-hint-color, #6b7280)',
-          link: 'var(--tg-theme-link-color, #2563eb)',
+          bg: 'var(--tg-theme-bg-color, #f4f7f6)',
+          text: 'var(--tg-theme-text-color, #0f172a)',
+          hint: 'var(--tg-theme-hint-color, #64748b)',
+          link: 'var(--tg-theme-link-color, #0d9488)',
           card: 'var(--tg-theme-secondary-bg-color, #ffffff)',
-          button: 'var(--tg-theme-button-color, #2563eb)',
+          button: 'var(--tg-theme-button-color, #0d9488)',
         },
       },
     },

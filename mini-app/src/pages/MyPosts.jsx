@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
 
-const statusStyles = {
-  draft: 'bg-amber-100 text-amber-700',
-  pending: 'bg-amber-100 text-amber-700',
-  approved: 'bg-emerald-100 text-emerald-700',
-  rejected: 'bg-red-100 text-red-700',
+const statusStyle = {
+  draft: 'bg-slate-100 text-slate-600',
+  pending: 'bg-amber-100 text-amber-800',
+  approved: 'bg-emerald-100 text-emerald-800',
+  rejected: 'bg-red-100 text-red-800',
 };
 
 export default function MyPosts() {
@@ -17,78 +17,52 @@ export default function MyPosts() {
 
   useEffect(() => {
     if (telegramId) {
-      api.getMyPosts(telegramId)
-        .then((res) => setPosts(res.data))
-        .catch(console.error)
-        .finally(() => setLoading(false));
+      api.getMyPosts(telegramId).then((res) => setPosts(res.data)).catch(console.error).finally(() => setLoading(false));
     }
   }, [telegramId]);
 
   if (loading) {
-    return <div className="p-10 text-center text-tg-hint">Loading...</div>;
+    return (
+      <div className="flex justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-200 border-t-teal-600" />
+      </div>
+    );
   }
 
   return (
-    <div className="mx-auto max-w-xl px-4 pb-20 pt-4">
-      <h1 className="mb-4 text-2xl font-bold">📋 My Posts</h1>
+    <div className="app-container">
+      <h1 className="text-xl font-bold text-slate-900">My Posts</h1>
+      <p className="mt-1 text-sm text-slate-500">Track your submissions</p>
 
       {posts.length === 0 ? (
-        <div className="px-5 py-10 text-center text-tg-hint">
-          <p>You haven't created any posts yet.</p>
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <Link
-              to="/buyer"
-              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
-            >
-              Request Medicine
-            </Link>
-            <Link
-              to="/seller"
-              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white"
-            >
-              Sell Medicine
-            </Link>
+        <div className="app-card mt-6 py-10 text-center">
+          <p className="text-sm text-slate-500">No posts yet</p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <Link to="/buyer" className="btn-app-primary py-2.5 text-xs">Request</Link>
+            <Link to="/seller" className="btn-app-secondary py-2.5 text-xs">Sell</Link>
           </div>
         </div>
       ) : (
-        posts.map((post) => (
-          <div
-            key={post._id}
-            className="mb-3 rounded-xl border border-gray-200 bg-tg-card p-4 shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <span
-                className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                  post.type === 'buyer' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-                }`}
-              >
-                {post.type === 'buyer' ? 'Buyer' : 'Seller'}
-              </span>
-              <span
-                className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                  statusStyles[post.approvalStatus]
-                }`}
-              >
-                {post.approvalStatus}
-              </span>
+        <div className="mt-5 space-y-3">
+          {posts.map((post) => (
+            <div key={post._id} className="app-card">
+              <div className="flex items-center justify-between">
+                <span className={`rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase ${post.type === 'buyer' ? 'bg-sky-100 text-sky-700' : 'bg-teal-100 text-teal-700'}`}>
+                  {post.type}
+                </span>
+                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize ${statusStyle[post.approvalStatus]}`}>
+                  {post.approvalStatus}
+                </span>
+              </div>
+              <h3 className="mt-2 font-bold text-slate-900">{post.medicineName}</h3>
+              <p className="mt-1 text-xs text-slate-500">{post.city} · {post.quantity}</p>
+              {post.rejectionReason && <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{post.rejectionReason}</p>}
+              {post.approvalStatus === 'draft' && (
+                <Link to={`/payment/${post._id}`} className="btn-app-primary mt-3 py-2.5 text-xs">Complete Payment</Link>
+              )}
             </div>
-            <h3 className="mt-2 font-semibold">{post.medicineName}</h3>
-            <div className="text-sm text-tg-hint">
-              📍 {post.city} · 📦 {post.quantity}
-            </div>
-            {post.rejectionReason && (
-              <p className="mt-2 text-sm text-red-500">Rejected: {post.rejectionReason}</p>
-            )}
-            {post.approvalStatus === 'draft' && (
-              <Link
-                to={`/payment/${post._id}`}
-                className="mt-3 inline-block rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
-              >
-                Complete Payment
-              </Link>
-            )}
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

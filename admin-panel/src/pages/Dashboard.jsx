@@ -2,79 +2,80 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import StatCard from '../components/StatCard';
-import PageHeader from '../components/PageHeader';
+import { PostsAreaChart, RevenueBarChart, StatusPieChart, TypePieChart } from '../components/Charts';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { IconClock, IconTrending } from '../components/Icons';
+import { IconDashboard, IconClock, IconPosts, IconTrending } from '../components/Icons';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api
-      .getDashboard()
-      .then((res) => setStats(res.data))
+    Promise.all([api.getDashboard(), api.getAnalytics()])
+      .then(([statsRes, analyticsRes]) => {
+        setStats(statsRes.data);
+        setAnalytics(analyticsRes.data);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LoadingSpinner label="Loading dashboard..." />;
+  if (!stats) return null;
 
   return (
-    <div>
-      <PageHeader
-        title="Overview"
-        description="Monitor marketplace activity and revenue at a glance"
-      />
-
+    <div className="space-y-8">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Total Posts" value={stats.totalPosts} color="blue" subtitle="All time" />
-        <StatCard title="Pending Review" value={stats.pendingPosts} color="amber" subtitle="Awaiting action" />
-        <StatCard title="Approved" value={stats.approvedPosts} color="emerald" subtitle="Published" />
-        <StatCard title="Rejected" value={stats.rejectedPosts} color="red" subtitle="Declined" />
+        <StatCard title="Total Posts" value={stats.totalPosts} icon={IconPosts} accent="blue" />
+        <StatCard title="Pending Review" value={stats.pendingPosts} icon={IconClock} accent="amber" />
+        <StatCard title="Approved" value={stats.approvedPosts} icon={IconDashboard} accent="emerald" />
+        <StatCard title="Rejected" value={stats.rejectedPosts} icon={IconPosts} accent="red" />
       </div>
 
-      <div className="mt-8">
-        <div className="mb-4 flex items-center gap-2">
-          <IconTrending className="h-5 w-5 text-slate-400" />
-          <h2 className="text-base font-semibold text-slate-900">Revenue</h2>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <StatCard
-            title="Total Revenue"
-            value={`ETB ${stats.totalRevenue.toLocaleString()}`}
-            color="violet"
-            subtitle="All approved payments"
-          />
-          <StatCard
-            title="Today"
-            value={`ETB ${stats.dailyRevenue.toLocaleString()}`}
-            color="emerald"
-            subtitle="Daily earnings"
-          />
-          <StatCard
-            title="This Month"
-            value={`ETB ${stats.monthlyRevenue.toLocaleString()}`}
-            color="blue"
-            subtitle="Monthly earnings"
-          />
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard title="Total Revenue" value={`ETB ${stats.totalRevenue.toLocaleString()}`} icon={IconTrending} accent="violet" />
+        <StatCard title="Today" value={`ETB ${stats.dailyRevenue.toLocaleString()}`} icon={IconTrending} accent="emerald" />
+        <StatCard title="This Month" value={`ETB ${stats.monthlyRevenue.toLocaleString()}`} icon={IconTrending} accent="teal" />
       </div>
+
+      {analytics && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="card p-6">
+            <h3 className="text-sm font-bold text-slate-900">Posts — Last 7 Days</h3>
+            <p className="mb-4 text-xs text-slate-400">New submissions per day</p>
+            <PostsAreaChart data={analytics.postsByDay} />
+          </div>
+          <div className="card p-6">
+            <h3 className="text-sm font-bold text-slate-900">Revenue — Last 7 Days</h3>
+            <p className="mb-4 text-xs text-slate-400">Approved payments (ETB)</p>
+            <RevenueBarChart data={analytics.revenueByDay} />
+          </div>
+          <div className="card p-6">
+            <h3 className="text-sm font-bold text-slate-900">Posts by Status</h3>
+            <p className="mb-2 text-xs text-slate-400">Approval breakdown</p>
+            <StatusPieChart data={analytics.byStatus} />
+          </div>
+          <div className="card p-6">
+            <h3 className="text-sm font-bold text-slate-900">Buyer vs Seller</h3>
+            <p className="mb-2 text-xs text-slate-400">Post type distribution</p>
+            <TypePieChart data={analytics.byType} />
+          </div>
+        </div>
+      )}
 
       {stats.pendingPosts > 0 && (
-        <div className="mt-8 overflow-hidden rounded-xl border border-amber-200/60 bg-gradient-to-r from-amber-50 to-orange-50">
-          <div className="flex items-center justify-between px-6 py-5">
+        <div className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-                <IconClock />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+                <IconClock className="h-6 w-6" />
               </div>
               <div>
-                <p className="font-semibold text-amber-900">
-                  {stats.pendingPosts} post{stats.pendingPosts !== 1 ? 's' : ''} need your review
+                <p className="font-bold text-amber-900">
+                  {stats.pendingPosts} post{stats.pendingPosts !== 1 ? 's' : ''} awaiting review
                 </p>
-                <p className="text-sm text-amber-700/80">
-                  Verify payments and approve listings for publication
-                </p>
+                <p className="text-sm text-amber-700/80">Verify payments and approve for publication</p>
               </div>
             </div>
             <Link to="/pending" className="btn-primary shrink-0 bg-amber-600 hover:bg-amber-700">

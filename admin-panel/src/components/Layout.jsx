@@ -4,87 +4,69 @@ import { IconDashboard, IconClock, IconPosts, IconLogout, IconPill } from './Ico
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: IconDashboard, end: true },
-  { to: '/pending', label: 'Pending Review', icon: IconClock },
+  { to: '/pending', label: 'Pending', icon: IconClock },
   { to: '/posts', label: 'All Posts', icon: IconPosts },
 ];
-
-const pageTitles = {
-  '/': 'Dashboard',
-  '/pending': 'Pending Review',
-  '/posts': 'All Posts',
-};
 
 export default function Layout() {
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const pageTitle = pageTitles[location.pathname]
+  const pageTitle =
+    navItems.find((n) => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to)))?.label
     || (location.pathname.startsWith('/posts/') ? 'Post Details' : 'Admin');
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-30 flex w-[260px] flex-col bg-brand-950 shadow-sidebar">
-        <div className="flex items-center gap-3 px-6 py-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300">
+    <div className="flex min-h-screen bg-slate-50">
+      <aside className="fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-slate-200 bg-white">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white shadow-lg shadow-teal-600/30">
             <IconPill className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-base font-bold tracking-tight text-white">PharmaBot</h1>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-brand-400/80">
-              Admin Console
-            </p>
+            <h1 className="text-sm font-bold text-slate-900">PharmaBot</h1>
+            <p className="text-[11px] font-medium text-slate-400">Administration</p>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-2">
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-brand-500/60">
-            Menu
-          </p>
+        <nav className="flex-1 space-y-1 px-3 py-4">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
                   isActive
-                    ? 'bg-brand-500/15 text-white shadow-sm'
-                    : 'text-brand-300/70 hover:bg-white/5 hover:text-white'
+                    ? 'bg-teal-600 text-white shadow-md shadow-teal-600/25'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={`h-5 w-5 ${isActive ? 'text-brand-300' : 'text-brand-500/60 group-hover:text-brand-300'}`} />
-                  {item.label}
-                  {item.to === '/pending' && isActive && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-400" />
-                  )}
+                  <item.icon className={`h-5 w-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                  <span className={isActive ? 'text-white' : ''}>{item.label}</span>
                 </>
               )}
             </NavLink>
           ))}
         </nav>
 
-        <div className="border-t border-white/5 p-4">
-          <div className="mb-3 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white">
+        <div className="border-t border-slate-100 p-4">
+          <div className="mb-3 flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-100 text-sm font-bold text-teal-700">
               {admin?.username?.charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">{admin?.username}</p>
-              <p className="truncate text-xs capitalize text-brand-400/70">{admin?.role}</p>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-800">{admin?.username}</p>
+              <p className="truncate text-xs capitalize text-slate-400">{admin?.role}</p>
             </div>
           </div>
           <button
-            onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-300/80 transition-colors hover:bg-white/5 hover:text-white"
+            onClick={() => { logout(); navigate('/login'); }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
           >
             <IconLogout className="h-4 w-4" />
             Sign out
@@ -92,12 +74,11 @@ export default function Layout() {
         </div>
       </aside>
 
-      <div className="ml-[260px] flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 px-8 py-4 backdrop-blur-md">
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-400">PharmaBot</p>
-          <h2 className="text-lg font-semibold text-slate-900">{pageTitle}</h2>
+      <div className="ml-64 flex min-h-screen flex-1 flex-col">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-8 py-5 backdrop-blur-md">
+          <h2 className="text-xl font-bold text-slate-900">{pageTitle}</h2>
+          <p className="text-sm text-slate-500">Ethiopian pharmaceutical marketplace</p>
         </header>
-
         <main className="flex-1 px-8 py-8">
           <Outlet />
         </main>
