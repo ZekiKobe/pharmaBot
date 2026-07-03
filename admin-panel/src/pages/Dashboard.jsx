@@ -42,12 +42,12 @@ export default function Dashboard() {
       {analytics && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="card p-6">
-            <h3 className="text-sm font-bold text-slate-900">Posts — Last 7 Days</h3>
+            <h3 className="text-sm font-bold text-slate-900">Posts (Last 7 Days)</h3>
             <p className="mb-4 text-xs text-slate-400">New submissions per day</p>
             <PostsAreaChart data={analytics.postsByDay} />
           </div>
           <div className="card p-6">
-            <h3 className="text-sm font-bold text-slate-900">Revenue — Last 7 Days</h3>
+            <h3 className="text-sm font-bold text-slate-900">Revenue (Last 7 Days)</h3>
             <p className="mb-4 text-xs text-slate-400">Approved payments (ETB)</p>
             <RevenueBarChart data={analytics.revenueByDay} />
           </div>

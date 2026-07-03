@@ -14,7 +14,7 @@ const phoneRule = body('contactPhone')
 
 const telegramIdRule = body('telegramId')
   .notEmpty()
-  .withMessage('Telegram user ID is missing — open the app from Telegram');
+  .withMessage('Telegram user ID is missing. Open this app from Telegram.');
 
 const buyerPostRules = [
   body('medicineName').trim().notEmpty().withMessage('Medicine name is required'),
@@ -64,7 +64,7 @@ const sellerPostRules = [
 
 const paymentUploadRules = [
   body('postId').notEmpty().withMessage('Post ID is required'),
-  body('telegramId').notEmpty().withMessage('Telegram user ID is missing'),
+  body('telegramId').notEmpty().withMessage('Telegram user ID is missing. Open this app from Telegram.'),
 ];
 
 const loginRules = [

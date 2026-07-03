@@ -50,7 +50,7 @@ export default function Login() {
             Manage your<br />pharmacy marketplace
           </h2>
           <p className="mt-4 max-w-md text-base leading-relaxed text-slate-400">
-            Review posts, verify payments, publish to Telegram, and track revenue — all from one dashboard.
+            Review posts, verify payments, publish to Telegram, and track revenue from one dashboard.
           </p>
         </div>
       </div>

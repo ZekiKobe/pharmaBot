@@ -39,7 +39,8 @@ export default function SellerForm() {
     haptic('medium');
 
     if (!telegramId) {
-      setError('Telegram user ID is missing — please open this app from Telegram.');
+      setError('Telegram user ID is missing. Open this app from Telegram.');
+      setFieldErrors({ telegramId: 'Telegram user ID is missing. Open this app from Telegram.' });
       setLoading(false);
       return;
     }

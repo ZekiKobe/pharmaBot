@@ -53,7 +53,7 @@ const uploadPayment = async (req, res, next) => {
         message: 'Post ID and Telegram ID are required',
         fieldErrors: {
           ...(!postId && { postId: 'Post ID is required' }),
-          ...(!telegramId && { telegramId: 'Telegram user ID is missing' }),
+          ...(!telegramId && { telegramId: 'Telegram user ID is missing. Open this app from Telegram.' }),
         },
       });
     }
