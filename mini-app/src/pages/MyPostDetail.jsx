@@ -133,6 +133,22 @@ export default function MyPostDetail() {
               <p className="mt-1 text-sm text-tg-text">{post.description}</p>
             </div>
           )}
+          {post.medicineImage && (
+            <div
+              className="rounded-xl p-3"
+              style={{
+                backgroundColor:
+                  'color-mix(in srgb, var(--tg-theme-hint-color) 10%, var(--tg-theme-secondary-bg-color))',
+              }}
+            >
+              <p className="text-[10px] font-bold uppercase text-tg-hint">Medicine / Prescription</p>
+              <img
+                src={api.getUploadUrl(post.medicineImage)}
+                alt="Medicine"
+                className="mt-2 max-h-56 w-full rounded-lg object-contain"
+              />
+            </div>
+          )}
         </div>
 
         <div

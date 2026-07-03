@@ -64,6 +64,18 @@ const notifyAdminsPendingPost = async (postId) => {
           parse_mode: 'HTML',
           ...keyboard,
         });
+        if (post.medicineImage) {
+          await bot.telegram.sendPhoto(adminId, `${baseUrl}${post.medicineImage}`, {
+            caption: '📷 Medicine / prescription photo',
+            parse_mode: 'HTML',
+          });
+        }
+      } else if (post.medicineImage) {
+        await bot.telegram.sendPhoto(adminId, `${baseUrl}${post.medicineImage}`, {
+          caption: text,
+          parse_mode: 'HTML',
+          ...keyboard,
+        });
       } else {
         await bot.telegram.sendMessage(adminId, text, { parse_mode: 'HTML', ...keyboard });
       }

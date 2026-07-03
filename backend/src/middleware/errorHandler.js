@@ -18,15 +18,21 @@ const errorHandler = (err, req, res, _next) => {
   }
 
   if (err instanceof multer.MulterError) {
-    const fieldErrors = { screenshot: err.code === 'LIMIT_FILE_SIZE' ? 'Image must be under 5MB' : err.message };
-    return res.status(400).json({ success: false, message: fieldErrors.screenshot, fieldErrors });
+    const imageField = req.file?.fieldname || (req.route?.path?.includes('payment') ? 'screenshot' : 'medicineImage');
+    const message = err.code === 'LIMIT_FILE_SIZE' ? 'Image must be under 5MB' : err.message;
+    return res.status(400).json({
+      success: false,
+      message,
+      fieldErrors: { [imageField]: message },
+    });
   }
 
   if (err.message === 'Only image files are allowed') {
+    const imageField = req.file?.fieldname || (req.route?.path?.includes('payment') ? 'screenshot' : 'medicineImage');
     return res.status(400).json({
       success: false,
       message: err.message,
-      fieldErrors: { screenshot: 'Only image files are allowed (JPEG, PNG, GIF, WebP)' },
+      fieldErrors: { [imageField]: 'Only image files are allowed (JPEG, PNG, GIF, WebP)' },
     });
   }
 

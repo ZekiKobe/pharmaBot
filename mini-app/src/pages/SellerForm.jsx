@@ -4,6 +4,7 @@ import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
 import { IconArrowLeft } from '../components/Icons';
 import FieldError, { ErrorSummary } from '../components/FieldError';
+import MedicineImageUpload from '../components/MedicineImageUpload';
 import { fieldClass, getFieldError } from '../utils/apiError';
 
 const CITIES = ['Addis Ababa', 'Adama', 'Bahir Dar', 'Dire Dawa', 'Hawassa', 'Mekelle', 'Gondar', 'Jimma', 'Dessie', 'Harar'];
@@ -18,6 +19,10 @@ export default function SellerForm() {
   const submittedRef = useRef(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [existingImageUrl, setExistingImageUrl] = useState('');
+  const [removeImage, setRemoveImage] = useState(false);
   const [form, setForm] = useState({
     medicineName: '', brand: '', strength: '', quantity: '', price: '', expiryDate: '',
     city: '', description: '', contactPhone: '', telegramUsername: user?.username || '',
@@ -53,6 +58,9 @@ export default function SellerForm() {
           contactPhone: post.contactPhone || '',
           telegramUsername: post.telegramUsername || user?.username || '',
         });
+        if (post.medicineImage) {
+          setExistingImageUrl(api.getUploadUrl(post.medicineImage));
+        }
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoadingPost(false));
@@ -83,22 +91,22 @@ export default function SellerForm() {
       };
 
       if (isEdit) {
-        await api.updateMyPost(postId, payload);
+        await api.updateMyPost(postId, payload, imageFile, { removeImage });
         haptic('success');
         navigate(`/my-posts/${postId}`, { replace: true });
         return;
       }
 
-      const res = await api.createSellerPost(payload);
+      const res = await api.createSellerPost(payload, imageFile);
 
-      const postId = res?.data?._id;
-      if (!postId) {
+      const newPostId = res?.data?._id;
+      if (!newPostId) {
         throw new Error('Listing created but ID was missing. Check My Posts.');
       }
 
       submittedRef.current = true;
       haptic('success');
-      navigate(`/payment/${postId}`);
+      navigate(`/payment/${newPostId}`);
     } catch (err) {
       haptic('error');
       setError(err.message || 'Something went wrong');
@@ -174,6 +182,29 @@ export default function SellerForm() {
           <textarea name="description" value={form.description} onChange={set} className={`${fieldClass(fieldErrors, 'description')} min-h-24 resize-none`} />
           <FieldError message={getFieldError(fieldErrors, 'description')} />
         </div>
+
+        <MedicineImageUpload
+          hint="Optional. Add a photo of the medicine or packaging."
+          preview={imagePreview}
+          existingUrl={!removeImage ? existingImageUrl : ''}
+          onSelect={(file) => {
+            if (file.size > 5 * 1024 * 1024) {
+              setError('Image must be 5MB or smaller');
+              return;
+            }
+            setImageFile(file);
+            setRemoveImage(false);
+            setImagePreview(URL.createObjectURL(file));
+          }}
+          onClear={() => {
+            setImageFile(null);
+            setImagePreview('');
+            setExistingImageUrl('');
+            setRemoveImage(true);
+          }}
+          error={getFieldError(fieldErrors, 'medicineImage')}
+        />
+
         <div>
           <label className="app-label">Phone *</label>
           <input name="contactPhone" value={form.contactPhone} onChange={set} type="tel" className={fieldClass(fieldErrors, 'contactPhone')} placeholder="0911234567" />

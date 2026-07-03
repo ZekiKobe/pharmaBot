@@ -49,6 +49,7 @@ const createPost = async (data, type) => {
     contactPhone: data.contactPhone,
     telegramUsername: data.telegramUsername,
     category: data.category,
+    medicineImage: data.medicineImage,
     amount: POST_PRICE,
     approvalStatus: 'draft',
     paymentStatus: 'pending',
@@ -208,6 +209,10 @@ const updateMyPost = async (postId, telegramId, data) => {
   Object.entries(fields).forEach(([key, value]) => {
     if (value !== undefined) post[key] = value;
   });
+
+  if (data.medicineImage !== undefined) {
+    post.medicineImage = data.medicineImage || undefined;
+  }
 
   if (data.fullName || data.telegramUsername || data.contactPhone) {
     user.fullName = data.fullName || user.fullName;

@@ -25,6 +25,7 @@ const postSchema = new mongoose.Schema(
     contactPhone: { type: String, required: true, trim: true },
     telegramUsername: { type: String, trim: true },
     category: { type: String, trim: true },
+    medicineImage: { type: String },
     paymentScreenshot: { type: String },
     paymentStatus: {
       type: String,

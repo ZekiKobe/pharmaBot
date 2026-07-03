@@ -2,6 +2,9 @@ const Channel = require('../models/Channel');
 const { formatChannelMessage } = require('./telegramService');
 const logger = require('../utils/logger');
 
+const getPublicBaseUrl = () =>
+  process.env.API_BASE_URL || process.env.MINI_APP_URL || `http://localhost:${process.env.PORT || 5000}`;
+
 const getActiveChannels = async () => {
   const channels = await Channel.find({ isActive: true }).sort({ isDefault: -1, name: 1 });
   if (channels.length) return channels;
@@ -34,13 +37,19 @@ const publishPostToChannels = async (post, bot) => {
   }
 
   const message = formatChannelMessage(post);
+  const imageUrl = post.medicineImage ? `${getPublicBaseUrl()}${post.medicineImage}` : null;
   const published = [];
 
   for (const channel of channels) {
     try {
-      const sent = await bot.telegram.sendMessage(channel.telegramChannelId, message, {
-        parse_mode: 'HTML',
-      });
+      const sent = imageUrl
+        ? await bot.telegram.sendPhoto(channel.telegramChannelId, imageUrl, {
+            caption: message,
+            parse_mode: 'HTML',
+          })
+        : await bot.telegram.sendMessage(channel.telegramChannelId, message, {
+            parse_mode: 'HTML',
+          });
       published.push({
         channelId: channel._id || undefined,
         channelName: channel.name,

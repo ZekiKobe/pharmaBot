@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const { attachMedicineImage } = require('../utils/postBody');
 const {
   createPost,
   submitPaymentScreenshot,
@@ -10,7 +11,7 @@ const {
 
 const createBuyerPost = async (req, res, next) => {
   try {
-    const post = await createPost(req.body, 'buyer');
+    const post = await createPost(attachMedicineImage(req.body, req.file), 'buyer');
     res.status(201).json({
       success: true,
       data: post,
@@ -24,8 +25,9 @@ const createBuyerPost = async (req, res, next) => {
 
 const createSellerPost = async (req, res, next) => {
   try {
+    const body = attachMedicineImage(req.body, req.file);
     const post = await createPost(
-      { ...req.body, expiryDate: new Date(req.body.expiryDate) },
+      { ...body, expiryDate: new Date(body.expiryDate) },
       'seller'
     );
     res.status(201).json({
@@ -192,7 +194,7 @@ const updateMyPostHandler = async (req, res, next) => {
         fieldErrors: { telegramId: 'Telegram user ID is missing. Open this app from Telegram.' },
       });
     }
-    const post = await updateMyPost(req.params.id, telegramId, req.body);
+    const post = await updateMyPost(req.params.id, telegramId, attachMedicineImage(req.body, req.file));
     res.json({ success: true, data: post, message: 'Post updated' });
   } catch (error) {
     if (error.message === 'Approved posts cannot be changed') {

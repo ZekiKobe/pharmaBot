@@ -30,12 +30,12 @@ router.get('/', postQueryRules, validate, getApprovedPosts);
 router.get('/status', getPostStatus);
 router.get('/user/:telegramId', getMyPosts);
 router.get('/my/:id', getMyPostById);
-router.patch('/my/:id', updateMyPostHandler);
+router.patch('/my/:id', upload.single('medicineImage'), updateMyPostHandler);
 router.delete('/my/:id', deleteMyPostHandler);
 router.get('/:id', getPostById);
 
-router.post('/buyer', buyerPostRules, validate, createBuyerPost);
-router.post('/seller', sellerPostRules, validate, createSellerPost);
+router.post('/buyer', upload.single('medicineImage'), buyerPostRules, validate, createBuyerPost);
+router.post('/seller', upload.single('medicineImage'), sellerPostRules, validate, createSellerPost);
 router.post('/payment', upload.single('screenshot'), paymentUploadRules, validate, uploadPayment);
 
 module.exports = router;

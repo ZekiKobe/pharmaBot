@@ -179,6 +179,27 @@ export default function PostDetail() {
               <p className="mt-2 text-center text-xs text-slate-400">Click to open full size</p>
             </div>
           )}
+
+          {post.medicineImage && (
+            <div className="card p-6">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
+                Medicine / Prescription Photo
+              </h2>
+              <a
+                href={api.getUploadUrl(post.medicineImage)}
+                target="_blank"
+                rel="noreferrer"
+                className="group block overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+              >
+                <img
+                  src={api.getUploadUrl(post.medicineImage)}
+                  alt="Medicine or prescription"
+                  className="max-h-96 w-full object-contain transition-transform group-hover:scale-[1.02]"
+                />
+              </a>
+              <p className="mt-2 text-center text-xs text-slate-400">Click to open full size</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6 lg:col-span-2">
