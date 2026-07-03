@@ -53,12 +53,19 @@ export default function Search() {
       <h1 className="text-xl font-bold text-tg-text">Search</h1>
       <p className="mt-1 text-sm text-tg-hint">Find medicines across Ethiopia</p>
 
-      <form onSubmit={handleSearch} className="mt-5 flex gap-2">
-        <div className="relative flex-1">
-          <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tg-hint" />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Medicine name..." className="app-input pl-10" />
+      <form onSubmit={handleSearch} className="mt-5 flex items-stretch gap-2">
+        <div className="relative min-w-0 flex-1">
+          <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tg-hint" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Medicine name..."
+            className="app-input w-full pl-10"
+          />
         </div>
-        <button type="submit" className="btn-app-primary shrink-0 px-4 py-3">Go</button>
+        <button type="submit" className="btn-app-primary-compact">
+          Go
+        </button>
       </form>
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">

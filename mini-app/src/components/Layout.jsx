@@ -45,7 +45,7 @@ export default function Layout() {
       </main>
 
       <nav
-          className="fixed inset-x-0 bottom-0 z-[100] bg-tg-card pt-1.5"
+          className="fixed inset-x-0 bottom-0 z-50 bg-tg-card pt-1.5"
           style={{
             borderTop: '1px solid color-mix(in srgb, var(--tg-theme-hint-color) 22%, transparent)',
             paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom, 0px))',

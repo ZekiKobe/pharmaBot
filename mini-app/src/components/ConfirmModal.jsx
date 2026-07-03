@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function ConfirmModal({
   title,
@@ -23,15 +24,15 @@ export default function ConfirmModal({
       ? 'rounded-xl border border-red-500/40 bg-red-500/15 py-3 text-sm font-semibold text-red-400 disabled:opacity-50'
       : 'btn-app-primary py-3 text-sm';
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center p-4 sm:items-center"
-      style={{ backgroundColor: 'color-mix(in srgb, var(--tg-theme-text-color, #000) 45%, transparent)' }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{ backgroundColor: 'color-mix(in srgb, var(--tg-theme-text-color, #000) 50%, transparent)' }}
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="app-card w-full max-w-sm animate-in shadow-lg"
+        className="app-card w-full max-w-sm shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -66,6 +67,7 @@ export default function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
