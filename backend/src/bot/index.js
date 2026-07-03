@@ -12,6 +12,39 @@ const isAdmin = (telegramId) => {
   return adminIds.includes(String(telegramId));
 };
 
+const getMiniAppUrl = () => process.env.MINI_APP_URL || '';
+
+const getPublicBaseUrl = () =>
+  process.env.API_BASE_URL || process.env.MINI_APP_URL || `http://localhost:${process.env.PORT || 5000}`;
+
+async function setupMenuButton(bot, chatId = null) {
+  const miniAppUrl = getMiniAppUrl();
+  if (!miniAppUrl || miniAppUrl.includes('example.com')) {
+    logger.warn('MINI_APP_URL not configured. Menu button not set.');
+    return false;
+  }
+
+  const menuButton = {
+    type: 'web_app',
+    text: 'ጀምር',
+    web_app: { url: miniAppUrl },
+  };
+
+  try {
+    if (chatId) {
+      await bot.telegram.setChatMenuButton({ chatId, menuButton });
+      logger.info(`Menu button configured: ጀምር -> ${miniAppUrl} (chat ${chatId})`);
+    } else {
+      await bot.telegram.setChatMenuButton({ menuButton });
+      logger.info(`Menu button configured: ጀምር -> ${miniAppUrl}`);
+    }
+    return true;
+  } catch (err) {
+    logger.error(`Failed to set menu button: ${err.message}`);
+    return false;
+  }
+}
+
 const createBot = () => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
@@ -34,11 +67,14 @@ const createBot = () => {
       { upsert: true, new: true }
     );
 
-    const miniAppUrl = process.env.MINI_APP_URL || 'https://example.com';
+    await setupMenuButton(bot, ctx.chat.id);
+    await setupMenuButton(bot);
+
     const keyboard = Markup.inlineKeyboard([
-      [Markup.button.webApp('🛒 Open Marketplace', miniAppUrl)],
-      [Markup.button.callback('💳 Payment Info', 'payment_info')],
-      [Markup.button.callback('📋 My Posts Status', 'my_posts')],
+      [
+        Markup.button.callback('💳 Payment Info', 'payment_info'),
+        Markup.button.callback('📋 My Posts', 'my_posts'),
+      ],
       [Markup.button.callback('📞 Contact Admin', 'contact_admin')],
     ]);
 
@@ -48,16 +84,18 @@ const createBot = () => {
         `• Create buyer requests\n` +
         `• List medicines for sale\n` +
         `• Browse latest posts\n\n` +
+        `Tap *ጀምር* beside the message box to open the app.\n\n` +
         `Each post costs *ETB ${process.env.POST_PRICE || 20}*.`,
       { parse_mode: 'Markdown', ...keyboard }
     );
   });
 
   bot.command('app', async (ctx) => {
-    const miniAppUrl = process.env.MINI_APP_URL || 'https://example.com';
-    await ctx.reply('Open the marketplace:', Markup.inlineKeyboard([
-      Markup.button.webApp('🛒 Open Mini App', miniAppUrl),
-    ]));
+    await setupMenuButton(bot, ctx.chat.id);
+    await ctx.reply(
+      'Tap the *ጀምር* button next to the message input to open the marketplace.',
+      { parse_mode: 'Markdown' }
+    );
   });
 
   bot.action('payment_info', async (ctx) => {
@@ -77,12 +115,12 @@ const createBot = () => {
     await ctx.answerCbQuery();
     const user = await User.findOne({ telegramId: String(ctx.from.id) });
     if (!user) {
-      return ctx.reply('You have no posts yet. Create one in the Mini App!');
+      return ctx.reply('You have no posts yet. Tap ጀምር to open the Mini App!');
     }
 
     const posts = await Post.find({ userId: user._id }).sort({ createdAt: -1 }).limit(10);
     if (!posts.length) {
-      return ctx.reply('You have no posts yet. Create one in the Mini App!');
+      return ctx.reply('You have no posts yet. Tap ጀምር to open the Mini App!');
     }
 
     const statusEmoji = { draft: '📝', pending: '⏳', approved: '✅', rejected: '❌' };
@@ -98,7 +136,7 @@ const createBot = () => {
   bot.action('contact_admin', async (ctx) => {
     await ctx.answerCbQuery();
     await ctx.reply(
-      '📞 Contact the admin:\n\nSend your question here and we will respond shortly.\n\nAdmin: @pharmabot_admin'
+      '📞 Contact the admin:\n\nSend your question here and we will respond shortly.'
     );
   });
 
@@ -115,6 +153,8 @@ const createBot = () => {
     if (!posts.length) {
       return ctx.reply('✅ No pending posts.');
     }
+
+    const baseUrl = getPublicBaseUrl();
 
     for (const post of posts) {
       const typeLabel = post.type === 'buyer' ? '🔍 Buyer Request' : '💊 Seller Listing';
@@ -134,7 +174,6 @@ const createBot = () => {
       ]);
 
       if (post.paymentScreenshot) {
-        const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
         try {
           await ctx.replyWithPhoto(`${baseUrl}${post.paymentScreenshot}`, {
             caption: text,
@@ -207,4 +246,4 @@ const createBot = () => {
   return bot;
 };
 
-module.exports = { createBot, isAdmin };
+module.exports = { createBot, setupMenuButton, isAdmin };
