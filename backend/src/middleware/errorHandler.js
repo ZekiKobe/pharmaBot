@@ -18,7 +18,16 @@ const errorHandler = (err, req, res, _next) => {
   }
 
   if (err instanceof multer.MulterError) {
-    return res.status(400).json({ success: false, message: err.message });
+    const fieldErrors = { screenshot: err.code === 'LIMIT_FILE_SIZE' ? 'Image must be under 5MB' : err.message };
+    return res.status(400).json({ success: false, message: fieldErrors.screenshot, fieldErrors });
+  }
+
+  if (err.message === 'Only image files are allowed') {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      fieldErrors: { screenshot: 'Only image files are allowed (JPEG, PNG, GIF, WebP)' },
+    });
   }
 
   res.status(err.statusCode || 500).json({

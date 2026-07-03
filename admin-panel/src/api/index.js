@@ -1,6 +1,7 @@
+import { ApiError } from '../utils/apiError';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const API_BASE = API_URL.replace(/\/api$/, '');
-
 function getToken() {
   return localStorage.getItem('admin_token');
 }
@@ -25,15 +26,23 @@ async function request(endpoint, options = {}) {
   };
 
   const response = await fetch(`${API_URL}${endpoint}`, config);
-  const data = await response.json();
+  let data = {};
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
 
   if (!response.ok) {
     if (response.status === 401) {
       clearToken();
     }
-    throw new Error(data.message || 'Request failed');
+    throw new ApiError(data.message || 'Request failed', {
+      status: response.status,
+      fieldErrors: data.fieldErrors || {},
+      errors: data.errors || [],
+    });
   }
-
   return data;
 }
 

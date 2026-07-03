@@ -1,3 +1,5 @@
+import { ApiError } from '../utils/apiError';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 async function request(endpoint, options = {}) {
@@ -12,10 +14,19 @@ async function request(endpoint, options = {}) {
   }
 
   const response = await fetch(url, config);
-  const data = await response.json();
+  let data = {};
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || 'Request failed');
+    throw new ApiError(data.message || 'Request failed', {
+      status: response.status,
+      fieldErrors: data.fieldErrors || {},
+      errors: data.errors || [],
+    });
   }
 
   return data;

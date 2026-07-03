@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
+import { ErrorSummary } from '../components/FieldError';
+import FieldError from '../components/FieldError';
+import { getFieldError } from '../utils/apiError';
 
 export default function Payment() {
   const { postId } = useParams();
@@ -13,14 +16,28 @@ export default function Payment() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => { api.getPaymentInfo().then((res) => setPaymentInfo(res.data)); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) { setError('Please upload payment screenshot'); return; }
-    setLoading(true);
     setError('');
+    setFieldErrors({});
+
+    if (!file) {
+      const msg = 'Payment screenshot is required';
+      setFieldErrors({ screenshot: msg });
+      setError(msg);
+      return;
+    }
+
+    if (!telegramId) {
+      setError('Telegram user ID is missing — please open this app from Telegram.');
+      return;
+    }
+
+    setLoading(true);
     haptic('medium');
     try {
       const fd = new FormData();
@@ -30,9 +47,18 @@ export default function Payment() {
       await api.uploadPayment(fd);
       haptic('success');
       setSubmitted(true);
-    } catch (err) { setError(err.message); haptic('error'); }
-    finally { setLoading(false); }
+    } catch (err) {
+      haptic('error');
+      setError(err.message || 'Upload failed');
+      setFieldErrors(err.fieldErrors || {});
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const uploadBorder = fieldErrors.screenshot
+    ? 'border-red-400 bg-red-50/50'
+    : 'border-slate-200 hover:border-teal-400';
 
   if (submitted) {
     return (
@@ -68,8 +94,21 @@ export default function Payment() {
       )}
 
       <form onSubmit={handleSubmit} className="mt-6">
-        <label className="flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed border-slate-200 bg-tg-card p-8 transition-colors hover:border-teal-400">
-          <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) { setFile(f); setPreview(URL.createObjectURL(f)); } }} className="hidden" />
+        <label className={`flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed bg-white p-8 transition-colors ${uploadBorder}`}>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const f = e.target.files[0];
+              if (f) {
+                setFile(f);
+                setPreview(URL.createObjectURL(f));
+                setFieldErrors((prev) => { const n = { ...prev }; delete n.screenshot; return n; });
+                setError('');
+              }
+            }}
+            className="hidden"
+          />
           {preview ? (
             <img src={preview} alt="Preview" className="max-h-48 rounded-xl object-contain" />
           ) : (
@@ -82,8 +121,17 @@ export default function Payment() {
             </>
           )}
         </label>
-        {error && <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
-        <button type="submit" disabled={loading || !file} className="btn-app-primary mt-5">{loading ? 'Uploading...' : 'Submit Payment'}</button>
+        <FieldError message={getFieldError(fieldErrors, 'screenshot')} />
+
+        {(error || Object.keys(fieldErrors).length > 0) && (
+          <div className="mt-3">
+            <ErrorSummary message={error} fieldErrors={fieldErrors} />
+          </div>
+        )}
+
+        <button type="submit" disabled={loading} className="btn-app-primary mt-5">
+          {loading ? 'Uploading...' : 'Submit Payment'}
+        </button>
       </form>
     </div>
   );

@@ -9,6 +9,7 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   if (loading) return <LoadingSpinner label="Checking session..." />;
@@ -17,11 +18,13 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
     setSubmitting(true);
     try {
       await login(username, password);
     } catch (err) {
       setError(err.message);
+      setFieldErrors(err.fieldErrors || {});
     } finally {
       setSubmitting(false);
     }
@@ -69,11 +72,13 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-700">Username</label>
-              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required autoComplete="username" className="input-field" placeholder="admin" />
+              <input type="text" value={username} onChange={(e) => { setUsername(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.username; return n; }); }} required autoComplete="username" className={`input-field ${fieldErrors.username ? 'border-red-400 ring-2 ring-red-100' : ''}`} placeholder="admin" />
+              {fieldErrors.username && <p className="mt-1 text-xs text-red-600">{fieldErrors.username}</p>}
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-700">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" className="input-field" placeholder="••••••••" />
+              <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.password; return n; }); }} required autoComplete="current-password" className={`input-field ${fieldErrors.password ? 'border-red-400 ring-2 ring-red-100' : ''}`} placeholder="••••••••" />
+              {fieldErrors.password && <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>}
             </div>
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>

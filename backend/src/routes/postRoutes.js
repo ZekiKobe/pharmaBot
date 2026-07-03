@@ -13,6 +13,7 @@ const {
 const {
   buyerPostRules,
   sellerPostRules,
+  paymentUploadRules,
   postQueryRules,
 } = require('../validators/postValidators');
 const validate = require('../middleware/validate');
@@ -29,6 +30,6 @@ router.get('/:id', getPostById);
 
 router.post('/buyer', buyerPostRules, validate, createBuyerPost);
 router.post('/seller', sellerPostRules, validate, createSellerPost);
-router.post('/payment', upload.single('screenshot'), uploadPayment);
+router.post('/payment', upload.single('screenshot'), paymentUploadRules, validate, uploadPayment);
 
 module.exports = router;

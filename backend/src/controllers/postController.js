@@ -39,12 +39,23 @@ const createSellerPost = async (req, res, next) => {
 const uploadPayment = async (req, res, next) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: 'Payment screenshot is required' });
+      return res.status(400).json({
+        success: false,
+        message: 'Payment screenshot is required',
+        fieldErrors: { screenshot: 'Payment screenshot is required' },
+      });
     }
 
     const { postId, telegramId } = req.body;
     if (!postId || !telegramId) {
-      return res.status(400).json({ success: false, message: 'postId and telegramId are required' });
+      return res.status(400).json({
+        success: false,
+        message: 'Post ID and Telegram ID are required',
+        fieldErrors: {
+          ...(!postId && { postId: 'Post ID is required' }),
+          ...(!telegramId && { telegramId: 'Telegram user ID is missing' }),
+        },
+      });
     }
 
     const screenshotPath = `/uploads/${req.file.filename}`;
