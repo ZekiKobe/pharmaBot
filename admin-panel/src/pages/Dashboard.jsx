@@ -4,7 +4,7 @@ import { api } from '../api';
 import StatCard from '../components/StatCard';
 import { PostsAreaChart, RevenueBarChart, StatusPieChart, TypePieChart } from '../components/Charts';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { IconDashboard, IconClock, IconPosts, IconTrending } from '../components/Icons';
+import { IconDashboard, IconClock, IconPosts, IconTrending, IconChannel } from '../components/Icons';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -63,6 +63,25 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      <div className="overflow-hidden rounded-2xl border border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-100 text-teal-600">
+              <IconChannel className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="font-bold text-teal-900">Telegram publish channels</p>
+              <p className="text-sm text-teal-800/80">
+                Add channels where approved posts are published by the bot
+              </p>
+            </div>
+          </div>
+          <Link to="/channels" className="btn-primary shrink-0">
+            Manage channels
+          </Link>
+        </div>
+      </div>
 
       {stats.pendingPosts > 0 && (
         <div className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-6">

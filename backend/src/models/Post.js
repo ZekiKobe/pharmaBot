@@ -39,6 +39,14 @@ const postSchema = new mongoose.Schema(
     },
     rejectionReason: { type: String },
     telegramChannelMessageId: { type: String },
+    publishedChannels: [
+      {
+        channelId: { type: mongoose.Schema.Types.ObjectId, ref: 'Channel' },
+        channelName: { type: String },
+        telegramChannelId: { type: String },
+        messageId: { type: String },
+      },
+    ],
     approvedAt: { type: Date },
     amount: { type: Number, default: 20 },
   },

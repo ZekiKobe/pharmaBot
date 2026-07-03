@@ -71,6 +71,14 @@ export function IconTrending({ className = 'w-5 h-5' }) {
   );
 }
 
+export function IconChannel({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-1.605 0-3.067.56-4.243 1.557C6.173 5.053 5.05 6.447 5.05 8.049v8.711z" />
+    </svg>
+  );
+}
+
 export function IconArrowLeft({ className = 'w-4 h-4' }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

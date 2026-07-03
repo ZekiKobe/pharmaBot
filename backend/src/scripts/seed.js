@@ -2,6 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const AdminUser = require('../models/AdminUser');
 const Category = require('../models/Category');
+const Channel = require('../models/Channel');
 const logger = require('../utils/logger');
 
 const defaultCategories = [
@@ -41,6 +42,21 @@ const seed = async () => {
       );
     }
     logger.info('Categories seeded');
+
+    if (process.env.TELEGRAM_CHANNEL_ID) {
+      await Channel.findOneAndUpdate(
+        { telegramChannelId: process.env.TELEGRAM_CHANNEL_ID },
+        {
+          name: 'Main Channel',
+          telegramChannelId: process.env.TELEGRAM_CHANNEL_ID,
+          description: 'Imported from TELEGRAM_CHANNEL_ID',
+          isActive: true,
+          isDefault: true,
+        },
+        { upsert: true, new: true }
+      );
+      logger.info('Default channel seeded from TELEGRAM_CHANNEL_ID');
+    }
 
     logger.info('Seed completed successfully');
     process.exit(0);

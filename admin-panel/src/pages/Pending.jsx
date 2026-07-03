@@ -33,8 +33,11 @@ export default function Pending() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6">
         <p className="text-sm text-slate-500">{posts.length} post{posts.length !== 1 ? 's' : ''} awaiting review</p>
+        <p className="mt-1 text-xs text-slate-400">
+          Approve or reject here, or from Telegram bot notifications. Either side works; already-reviewed posts are blocked on the other.
+        </p>
       </div>
 
       {message && <AlertBanner type="success" message={message} onDismiss={() => setMessage('')} />}
@@ -44,7 +47,7 @@ export default function Pending() {
       )}
 
       {confirmApprove && (
-        <ConfirmModal title="Approve & publish?" message="This post will be published to the Telegram channel and the user will be notified." confirmLabel="Approve" variant="success" loading={approveLoading} onConfirm={handleApprove} onClose={() => setConfirmApprove(null)} />
+        <ConfirmModal title="Approve & publish?" message="This post will be published to all active Telegram channels and the user will be notified." confirmLabel="Approve" variant="success" loading={approveLoading} onConfirm={handleApprove} onClose={() => setConfirmApprove(null)} />
       )}
       {rejectPost && <RejectModal post={rejectPost} onClose={() => setRejectPost(null)} onConfirm={async (reason) => { await api.rejectPost(rejectPost._id, reason); setMessage('Post rejected'); loadPosts(); }} />}
     </div>

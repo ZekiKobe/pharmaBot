@@ -3,6 +3,7 @@ const { setBot } = require('./botInstance');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const { approvePost, rejectPost, getPaymentInfo } = require('../services/postService');
+const { buildPendingReviewMessage } = require('../services/adminNotifyService');
 const logger = require('../utils/logger');
 
 const pendingRejectState = new Map();
@@ -145,6 +146,11 @@ const createBot = () => {
       return ctx.reply('⛔ Unauthorized. Admin only command.');
     }
 
+    await ctx.reply(
+      '📋 *Pending review*\n\nUse inline buttons on each notification, or run /pending again to list the queue.',
+      { parse_mode: 'Markdown' }
+    );
+
     const posts = await Post.find({ approvalStatus: 'pending' })
       .sort({ createdAt: -1 })
       .limit(10)
@@ -157,14 +163,7 @@ const createBot = () => {
     const baseUrl = getPublicBaseUrl();
 
     for (const post of posts) {
-      const typeLabel = post.type === 'buyer' ? '🔍 Buyer Request' : '💊 Seller Listing';
-      const text =
-        `${typeLabel}\n\n` +
-        `*Medicine:* ${post.medicineName}\n` +
-        `*City:* ${post.city}\n` +
-        `*Quantity:* ${post.quantity}\n` +
-        (post.price ? `*Price:* ETB ${post.price}\n` : '') +
-        `*Submitted:* ${post.createdAt.toLocaleString()}`;
+      const text = buildPendingReviewMessage(post);
 
       const keyboard = Markup.inlineKeyboard([
         [
@@ -198,17 +197,21 @@ const createBot = () => {
     try {
       await approvePost(postId, null);
       await ctx.answerCbQuery('Approved!');
+      const suffix = '\n\n✅ *APPROVED*';
       await ctx.editMessageCaption?.(
-        (ctx.callbackQuery.message.caption || '') + '\n\n✅ *APPROVED*',
+        (ctx.callbackQuery.message.caption || '') + suffix,
         { parse_mode: 'Markdown' }
       ).catch(() =>
         ctx.editMessageText(
-          (ctx.callbackQuery.message.text || '') + '\n\n✅ *APPROVED*',
+          (ctx.callbackQuery.message.text || '') + suffix,
           { parse_mode: 'Markdown' }
         )
       );
     } catch (err) {
-      await ctx.answerCbQuery(`Error: ${err.message}`);
+      await ctx.answerCbQuery(err.message);
+      if (err.message.includes('already')) {
+        await ctx.reply(`ℹ️ ${err.message}`);
+      }
     }
   });
 

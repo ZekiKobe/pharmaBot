@@ -1,10 +1,11 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { IconDashboard, IconClock, IconPosts, IconLogout, IconPill } from './Icons';
+import { IconDashboard, IconClock, IconPosts, IconLogout, IconPill, IconChannel } from './Icons';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: IconDashboard, end: true },
-  { to: '/pending', label: 'Pending', icon: IconClock },
+  { to: '/pending', label: 'Pending Review', icon: IconClock },
+  { to: '/channels', label: 'Telegram Channels', icon: IconChannel },
   { to: '/posts', label: 'All Posts', icon: IconPosts },
 ];
 

@@ -77,6 +77,16 @@ export const api = {
       body: JSON.stringify({ reason }),
     }),
 
+  getChannels: () => request('/admin/channels'),
+
+  createChannel: (data) =>
+    request('/admin/channels', { method: 'POST', body: JSON.stringify(data) }),
+
+  updateChannel: (id, data) =>
+    request(`/admin/channels/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  deleteChannel: (id) => request(`/admin/channels/${id}`, { method: 'DELETE' }),
+
   getUploadUrl: (path) => `${API_BASE}${path}`,
 };
 

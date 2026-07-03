@@ -2,7 +2,8 @@ const Post = require('../models/Post');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const { getBot } = require('../bot/botInstance');
-const { formatChannelMessage } = require('./telegramService');
+const { publishPostToChannels } = require('./channelService');
+const { notifyAdminsPendingPost } = require('./adminNotifyService');
 const logger = require('../utils/logger');
 
 const POST_PRICE = parseInt(process.env.POST_PRICE, 10) || 20;
@@ -79,6 +80,10 @@ const submitPaymentScreenshot = async (postId, screenshotPath, telegramId) => {
     status: 'pending',
   });
 
+  notifyAdminsPendingPost(post._id).catch((err) => {
+    logger.warn(`Admin notification failed: ${err.message}`);
+  });
+
   return { post, payment };
 };
 
@@ -86,26 +91,16 @@ const approvePost = async (postId, adminId) => {
   const post = await Post.findById(postId).populate('userId');
   if (!post) throw new Error('Post not found');
   if (post.approvalStatus === 'approved') throw new Error('Post already approved');
+  if (post.approvalStatus === 'rejected') throw new Error('Post was already rejected');
+  if (post.approvalStatus !== 'pending') throw new Error('Post is not awaiting review');
 
   const bot = getBot();
-  let channelMessageId = null;
-
-  if (bot && process.env.TELEGRAM_CHANNEL_ID) {
-    try {
-      const message = formatChannelMessage(post);
-      const sent = await bot.telegram.sendMessage(process.env.TELEGRAM_CHANNEL_ID, message, {
-        parse_mode: 'Markdown',
-      });
-      channelMessageId = String(sent.message_id);
-    } catch (err) {
-      logger.error(`Failed to publish to channel: ${err.message}`);
-      throw new Error('Failed to publish to Telegram channel');
-    }
-  }
+  const publishedChannels = await publishPostToChannels(post, bot);
 
   post.approvalStatus = 'approved';
   post.paymentStatus = 'verified';
-  post.telegramChannelMessageId = channelMessageId;
+  post.publishedChannels = publishedChannels;
+  post.telegramChannelMessageId = publishedChannels[0]?.messageId || null;
   post.approvedAt = new Date();
   await post.save();
 
@@ -133,6 +128,8 @@ const rejectPost = async (postId, reason, adminId) => {
   const post = await Post.findById(postId).populate('userId');
   if (!post) throw new Error('Post not found');
   if (post.approvalStatus === 'approved') throw new Error('Cannot reject approved post');
+  if (post.approvalStatus === 'rejected') throw new Error('Post already rejected');
+  if (post.approvalStatus !== 'pending') throw new Error('Post is not awaiting review');
 
   post.approvalStatus = 'rejected';
   post.paymentStatus = 'rejected';
