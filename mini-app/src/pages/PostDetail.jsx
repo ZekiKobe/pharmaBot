@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api';
 import { IconArrowLeft, IconMapPin } from '../components/Icons';
+import { formatCategoryLabel } from '../utils/category';
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -52,6 +53,7 @@ export default function PostDetail() {
 
         <div className="mt-5 space-y-3">
           {post.brand && <Row label="Brand" value={post.brand} />}
+          {!isBuyer && post.category && <Row label="Category" value={formatCategoryLabel(post.category)} />}
           <Row label="Quantity" value={post.quantity} />
           {!isBuyer && post.price && <Row label="Price" value={`ETB ${post.price}`} highlight />}
           {!isBuyer && post.expiryDate && <Row label="Expiry" value={new Date(post.expiryDate).toLocaleDateString()} />}

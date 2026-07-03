@@ -58,7 +58,7 @@ const sellerPostRules = [
   telegramIdRule,
   body('description').optional({ values: 'falsy' }).trim(),
   body('telegramUsername').optional({ values: 'falsy' }).trim(),
-  body('category').optional({ values: 'falsy' }).trim(),
+  body('category').trim().notEmpty().withMessage('Category is required'),
   body('fullName').optional({ values: 'falsy' }).trim(),
 ];
 

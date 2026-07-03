@@ -4,6 +4,7 @@ import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
 import { IconArrowLeft, IconMapPin } from '../components/Icons';
 import ConfirmModal from '../components/ConfirmModal';
+import { formatCategoryLabel } from '../utils/category';
 
 const statusLabel = {
   draft: { text: 'Draft', color: 'text-tg-hint' },
@@ -114,6 +115,9 @@ export default function MyPostDetail() {
 
         <div className="mt-5 space-y-3">
           {post.brand && <Row label="Brand" value={post.brand} />}
+          {!isBuyer && post.category && (
+            <Row label="Category" value={formatCategoryLabel(post.category)} />
+          )}
           <Row label="Quantity" value={post.quantity} />
           {!isBuyer && post.price != null && <Row label="Price" value={`ETB ${post.price}`} highlight />}
           {!isBuyer && post.expiryDate && (

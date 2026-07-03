@@ -50,6 +50,12 @@ const formatContactBlock = (post) =>
   `   ${formatUsername(post.telegramUsername)}\n` +
   `   <code>${escapeHtml(post.contactPhone)}</code>`;
 
+const formatCategoryLabel = (slug) =>
+  String(slug)
+    .replace(/-/g, ' ')
+    .replace(/\band\b/gi, '&')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
 const formatSellerPost = (post) => {
   const parts = [
     buildHeader(),
@@ -58,6 +64,7 @@ const formatSellerPost = (post) => {
     '',
     formatMedicineTitle(post),
     post.brand ? `🏷 <b>Brand</b>     ${escapeHtml(post.brand)}` : null,
+    post.category ? `🏷 <b>Category</b> ${escapeHtml(formatCategoryLabel(post.category))}` : null,
     `📦 <b>Quantity</b>  ${escapeHtml(post.quantity)}`,
     post.price != null && post.price !== ''
       ? `💰 <b>Price</b>      <b>ETB ${escapeHtml(post.price)}</b>`

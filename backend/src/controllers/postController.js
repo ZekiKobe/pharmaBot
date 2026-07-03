@@ -203,6 +203,23 @@ const updateMyPostHandler = async (req, res, next) => {
     if (error.message === 'Post not found' || error.message === 'User not found') {
       return res.status(404).json({ success: false, message: error.message });
     }
+    const fieldMap = {
+      'Category is required': 'category',
+      'Brand is required': 'brand',
+      'Strength is required': 'strength',
+      'Medicine name is required': 'medicineName',
+      'Quantity is required': 'quantity',
+      'City is required': 'city',
+      'Contact phone is required': 'contactPhone',
+      'Price must be greater than 0': 'price',
+    };
+    if (fieldMap[error.message]) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+        fieldErrors: { [fieldMap[error.message]]: error.message },
+      });
+    }
     next(error);
   }
 };

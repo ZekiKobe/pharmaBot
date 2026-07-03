@@ -193,6 +193,7 @@ const updateMyPost = async (postId, telegramId, data) => {
   if (post.type === 'seller') {
     if (!data.brand?.trim()) throw new Error('Brand is required');
     if (!data.strength?.trim()) throw new Error('Strength is required');
+    if (!data.category?.trim()) throw new Error('Category is required');
     if (data.price == null || data.price === '' || Number(data.price) <= 0) {
       throw new Error('Price must be greater than 0');
     }

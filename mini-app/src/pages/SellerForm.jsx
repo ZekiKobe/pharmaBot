@@ -23,9 +23,10 @@ export default function SellerForm() {
   const [imagePreview, setImagePreview] = useState('');
   const [existingImageUrl, setExistingImageUrl] = useState('');
   const [removeImage, setRemoveImage] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({
     medicineName: '', brand: '', strength: '', quantity: '', price: '', expiryDate: '',
-    city: '', description: '', contactPhone: '', telegramUsername: user?.username || '',
+    city: '', category: '', description: '', contactPhone: '', telegramUsername: user?.username || '',
   });
 
   const set = (e) => {
@@ -41,6 +42,10 @@ export default function SellerForm() {
   };
 
   useEffect(() => {
+    api.getCategories().then((res) => setCategories(res.data || [])).catch(console.error);
+  }, []);
+
+  useEffect(() => {
     if (!isEdit || !telegramId) return;
     api
       .getMyPost(postId, telegramId)
@@ -54,6 +59,7 @@ export default function SellerForm() {
           price: post.price ?? '',
           expiryDate: post.expiryDate ? post.expiryDate.split('T')[0] : '',
           city: post.city || '',
+          category: post.category || '',
           description: post.description || '',
           contactPhone: post.contactPhone || '',
           telegramUsername: post.telegramUsername || user?.username || '',
@@ -139,6 +145,18 @@ export default function SellerForm() {
           <label className="app-label">Medicine Name *</label>
           <input name="medicineName" value={form.medicineName} onChange={set} className={fieldClass(fieldErrors, 'medicineName')} />
           <FieldError message={getFieldError(fieldErrors, 'medicineName')} />
+        </div>
+        <div>
+          <label className="app-label">Category *</label>
+          <select name="category" value={form.category} onChange={set} className={fieldClass(fieldErrors, 'category')}>
+            <option value="">Select category</option>
+            {categories.map((cat) => (
+              <option key={cat._id} value={cat.slug}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+          <FieldError message={getFieldError(fieldErrors, 'category')} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
