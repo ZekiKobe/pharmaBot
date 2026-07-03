@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
@@ -10,8 +10,10 @@ const CITIES = ['Addis Ababa', 'Adama', 'Bahir Dar', 'Dire Dawa', 'Hawassa', 'Me
 
 export default function SellerForm() {
   const navigate = useNavigate();
-  const { user, telegramId, haptic } = useTelegram();
+  const { user, telegramId, haptic, webApp } = useTelegram();
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const submittedRef = useRef(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [form, setForm] = useState({
@@ -33,8 +35,11 @@ export default function SellerForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading || submittedRef.current) return;
+
     setLoading(true);
     setError('');
+    setSuccess('');
     setFieldErrors({});
     haptic('medium');
 
@@ -52,8 +57,24 @@ export default function SellerForm() {
         telegramId,
         fullName: [user?.first_name, user?.last_name].filter(Boolean).join(' '),
       });
+
+      const postId = res?.data?._id;
+      if (!postId) {
+        throw new Error('Listing created but ID was missing. Check My Posts.');
+      }
+
+      submittedRef.current = true;
       haptic('success');
-      navigate(`/payment/${res.data._id}`);
+
+      const message = res.message || 'Listing created! Continue to payment.';
+      setSuccess(message);
+
+      const goToPayment = () => navigate(`/payment/${postId}`);
+      if (webApp?.showAlert) {
+        webApp.showAlert(message, goToPayment);
+      } else {
+        goToPayment();
+      }
     } catch (err) {
       haptic('error');
       setError(err.message || 'Something went wrong');
@@ -129,6 +150,18 @@ export default function SellerForm() {
           <input name="telegramUsername" value={form.telegramUsername} onChange={set} className={fieldClass(fieldErrors, 'telegramUsername')} />
           <FieldError message={getFieldError(fieldErrors, 'telegramUsername')} />
         </div>
+
+        {success && (
+          <div
+            className="rounded-xl px-4 py-3 text-sm font-medium"
+            style={{
+              backgroundColor: 'color-mix(in srgb, #34d399 15%, var(--tg-theme-secondary-bg-color))',
+              color: '#34d399',
+            }}
+          >
+            {success}
+          </div>
+        )}
 
         {(error || Object.keys(fieldErrors).length > 0) && (
           <ErrorSummary message={error} fieldErrors={fieldErrors} />

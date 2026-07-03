@@ -89,12 +89,24 @@ export function TelegramProvider({ children }) {
 
   const telegramId = user?.id != null ? String(user.id) : null;
 
+  const haptic = (type = 'light') => {
+    const feedback = webApp?.HapticFeedback;
+    if (!feedback) return;
+
+    if (type === 'success' || type === 'error' || type === 'warning') {
+      feedback.notificationOccurred?.(type);
+      return;
+    }
+
+    feedback.impactOccurred?.(type);
+  };
+
   const value = {
     webApp,
     user,
     telegramId,
     ready,
-    haptic: (type = 'light') => webApp?.HapticFeedback?.impactOccurred(type),
+    haptic,
   };
 
   return (
