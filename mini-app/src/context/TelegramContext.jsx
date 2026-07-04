@@ -2,6 +2,26 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const TelegramContext = createContext(null);
 
+const LIGHT_THEME = {
+  bgColor: '#f5f7fb',
+  secondaryBgColor: '#ffffff',
+  textColor: '#0f172a',
+  hintColor: '#64748b',
+  linkColor: '#0f766e',
+  buttonColor: '#0d9488',
+  buttonTextColor: '#ffffff',
+};
+
+function applyLightTheme(root) {
+  root.style.setProperty('--tg-theme-bg-color', LIGHT_THEME.bgColor);
+  root.style.setProperty('--tg-theme-secondary-bg-color', LIGHT_THEME.secondaryBgColor);
+  root.style.setProperty('--tg-theme-text-color', LIGHT_THEME.textColor);
+  root.style.setProperty('--tg-theme-hint-color', LIGHT_THEME.hintColor);
+  root.style.setProperty('--tg-theme-link-color', LIGHT_THEME.linkColor);
+  root.style.setProperty('--tg-theme-button-color', LIGHT_THEME.buttonColor);
+  root.style.setProperty('--tg-theme-button-text-color', LIGHT_THEME.buttonTextColor);
+}
+
 function parseUserFromInitData(initData) {
   if (!initData) return null;
   try {
@@ -52,21 +72,12 @@ export function TelegramProvider({ children }) {
       tg.ready();
       tg.expand();
 
-      const params = tg.themeParams || {};
       const root = document.documentElement;
+      applyLightTheme(root);
 
-      Object.entries(params).forEach(([key, value]) => {
-        if (value) {
-          root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, value);
-        }
-      });
-
-      const bg = params.bg_color || '#0f172a';
-      const secondary = params.secondary_bg_color || '#1e293b';
-
-      if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor(secondary);
-      if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor(bg);
-      if (typeof tg.setBottomBarColor === 'function') tg.setBottomBarColor(secondary);
+      if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor(LIGHT_THEME.secondaryBgColor);
+      if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor(LIGHT_THEME.bgColor);
+      if (typeof tg.setBottomBarColor === 'function') tg.setBottomBarColor(LIGHT_THEME.secondaryBgColor);
 
       setWebApp(tg);
 
@@ -84,6 +95,7 @@ export function TelegramProvider({ children }) {
     if (import.meta.env.DEV) {
       setUser(getDevUser());
     }
+    applyLightTheme(document.documentElement);
     setReady(true);
   }, []);
 
