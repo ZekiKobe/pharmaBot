@@ -31,45 +31,23 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="relative hidden w-1/2 overflow-hidden bg-slate-900 lg:flex lg:flex-col lg:justify-between">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-teal-600/30 via-transparent to-transparent" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 px-4 py-10 sm:px-6">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(13,148,136,0.10),_transparent_42%)]" />
+      <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/10 blur-3xl" />
 
-        <div className="relative z-10 p-12">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-600 text-white">
-              <IconPill />
+      <div className="relative z-10 w-full max-w-md">
+        <div className="card border-slate-200/90 p-6 shadow-xl shadow-slate-200/70 sm:p-8">
+          <div className="mb-8 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-lg shadow-teal-600/25">
+              <IconPill className="h-7 w-7" />
             </div>
-            <span className="text-xl font-bold text-white">PharmaBot</span>
-          </div>
-        </div>
-
-        <div className="relative z-10 px-12 pb-16">
-          <h2 className="text-4xl font-extrabold leading-tight tracking-tight text-white">
-            Manage your<br />pharmacy marketplace
-          </h2>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-slate-400">
-            Review posts, verify payments, publish to Telegram, and track revenue from one dashboard.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-50 px-6 py-12">
-        <div className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden">
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white">
-                <IconPill className="h-5 w-5" />
-              </div>
-              <span className="text-lg font-bold text-slate-900">PharmaBot</span>
-            </div>
+            <h1 className="mt-5 text-2xl font-extrabold tracking-tight text-slate-900">PharmaBot Admin</h1>
+            <p className="mt-2 text-sm leading-relaxed text-slate-500">
+              Sign in to manage posts, users, channels, and marketplace settings.
+            </p>
           </div>
 
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Sign in</h1>
-          <p className="mt-1 text-sm text-slate-500">Enter your admin credentials</p>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-700">Username</label>
               <input type="text" value={username} onChange={(e) => { setUsername(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.username; return n; }); }} required autoComplete="username" className={`input-field ${fieldErrors.username ? 'border-red-400 ring-2 ring-red-100' : ''}`} placeholder="admin" />
@@ -77,7 +55,7 @@ export default function Login() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-700">Password</label>
-              <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.password; return n; }); }} required autoComplete="current-password" className={`input-field ${fieldErrors.password ? 'border-red-400 ring-2 ring-red-100' : ''}`} placeholder="••••••••" />
+              <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.password; return n; }); }} required autoComplete="current-password" className={`input-field ${fieldErrors.password ? 'border-red-400 ring-2 ring-red-100' : ''}`} placeholder="Enter your password" />
               {fieldErrors.password && <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>}
             </div>
             {error && (
