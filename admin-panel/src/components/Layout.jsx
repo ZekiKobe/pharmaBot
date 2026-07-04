@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { IconDashboard, IconClock, IconPosts, IconLogout, IconPill, IconChannel, IconSettings, IconMenu, IconClose } from './Icons';
+import { IconDashboard, IconClock, IconPosts, IconLogout, IconPill, IconChannel, IconSettings, IconMenu, IconClose, IconUsers } from './Icons';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: IconDashboard, end: true },
   { to: '/pending', label: 'Pending Review', icon: IconClock },
   { to: '/channels', label: 'Telegram Channels', icon: IconChannel },
   { to: '/posts', label: 'All Posts', icon: IconPosts },
+  { to: '/users', label: 'Users', icon: IconUsers },
   { to: '/settings', label: 'Settings', icon: IconSettings },
 ];
 
@@ -19,7 +20,7 @@ export default function Layout() {
 
   const pageTitle =
     navItems.find((n) => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to)))?.label
-    || (location.pathname.startsWith('/posts/') ? 'Post Details' : 'Admin');
+    || (location.pathname.startsWith('/posts/') ? (location.pathname.endsWith('/edit') ? 'Edit Post' : 'Post Details') : 'Admin');
 
   const handleSignOut = () => {
     logout();

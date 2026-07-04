@@ -171,8 +171,7 @@ const getOwnedPost = async (postId, telegramId) => {
   return { user, post };
 };
 
-const updateMyPost = async (postId, telegramId, data) => {
-  const { user, post } = await getOwnedPost(postId, telegramId);
+const applyPostUpdate = async ({ post, user, data }) => {
   const shouldRefreshChannels = post.approvalStatus === 'approved' && post.isActive !== false;
   const previousPublishedChannels = (post.publishedChannels || []).map((pub) => ({
     channelId: pub.channelId,
@@ -218,7 +217,7 @@ const updateMyPost = async (postId, telegramId, data) => {
     post.medicineImage = data.medicineImage || undefined;
   }
 
-  if (data.fullName || data.telegramUsername || data.contactPhone) {
+  if (user && (data.fullName || data.telegramUsername || data.contactPhone)) {
     user.fullName = data.fullName || user.fullName;
     user.username = data.telegramUsername || user.username;
     user.phoneNumber = data.contactPhone || user.phoneNumber;
@@ -265,6 +264,17 @@ const updateMyPost = async (postId, telegramId, data) => {
   return post;
 };
 
+const updateMyPost = async (postId, telegramId, data) => {
+  const { user, post } = await getOwnedPost(postId, telegramId);
+  return applyPostUpdate({ post, user, data });
+};
+
+const updatePostByAdmin = async (postId, data) => {
+  const post = await Post.findById(postId).populate('userId');
+  if (!post) throw new Error('Post not found');
+  return applyPostUpdate({ post, user: post.userId, data });
+};
+
 const deleteMyPost = async (postId, telegramId) => {
   const { post } = await getOwnedPost(postId, telegramId);
   const bot = getBot();
@@ -299,20 +309,6 @@ const setPostActive = async (postId, isActive) => {
     throw new Error('Only approved posts can be activated or deactivated');
   }
 
-  const bot = getBot();
-  const becomingInactive = post.isActive !== false && isActive === false;
-  const becomingActive = post.isActive === false && isActive === true;
-
-  if (becomingInactive && post.publishedChannels?.length) {
-    await unpublishPostFromChannels(post, bot);
-  }
-
-  if (becomingActive && bot) {
-    const publishedChannels = await publishPostToChannels(post, bot);
-    post.publishedChannels = publishedChannels;
-    post.telegramChannelMessageId = publishedChannels[0]?.messageId || null;
-  }
-
   post.isActive = isActive;
   await post.save();
   return post;
@@ -336,6 +332,7 @@ module.exports = {
   rejectPost,
   getOwnedPost,
   updateMyPost,
+  updatePostByAdmin,
   deleteMyPost,
   adminDeletePost,
   setPostActive,

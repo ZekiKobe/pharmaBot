@@ -1,6 +1,14 @@
 const Post = require('../models/Post');
 const Payment = require('../models/Payment');
-const { approvePost, rejectPost, adminDeletePost, setPostActive } = require('../services/postService');
+const User = require('../models/User');
+const AdminUser = require('../models/AdminUser');
+const {
+  approvePost,
+  rejectPost,
+  adminDeletePost,
+  setPostActive,
+  updatePostByAdmin,
+} = require('../services/postService');
 
 const getDashboardStats = async (_req, res, next) => {
   try {
@@ -108,6 +116,36 @@ const getAllPosts = async (req, res, next) => {
   }
 };
 
+const updatePost = async (req, res, next) => {
+  try {
+    const post = await updatePostByAdmin(req.params.id, req.body);
+    res.json({ success: true, data: post, message: 'Post updated successfully' });
+  } catch (error) {
+    if (error.message === 'Post not found') {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    const fieldMap = {
+      'Category is required': 'category',
+      'Brand is required': 'brand',
+      'Strength is required': 'strength',
+      'Medicine name is required': 'medicineName',
+      'Quantity is required': 'quantity',
+      'City is required': 'city',
+      'Contact phone is required': 'contactPhone',
+      'Price must be greater than 0': 'price',
+      'Published posts cannot be updated right now. Please try again later.': 'medicineName',
+    };
+    if (fieldMap[error.message]) {
+      return res.status(error.message.includes('right now') ? 503 : 400).json({
+        success: false,
+        message: error.message,
+        fieldErrors: { [fieldMap[error.message]]: error.message },
+      });
+    }
+    next(error);
+  }
+};
+
 const getPostDetails = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id).populate(
@@ -184,6 +222,153 @@ const toggleActive = async (req, res, next) => {
   }
 };
 
+const listBotUsers = async (req, res, next) => {
+  try {
+    const search = String(req.query.search || '').trim();
+    const filter = search
+      ? {
+          $or: [
+            { username: new RegExp(search, 'i') },
+            { fullName: new RegExp(search, 'i') },
+            { telegramId: new RegExp(search, 'i') },
+            { phoneNumber: new RegExp(search, 'i') },
+          ],
+        }
+      : {};
+
+    const users = await User.find(filter).sort({ createdAt: -1 }).lean();
+    const userIds = users.map((user) => user._id);
+    const postCounts = await Post.aggregate([
+      { $match: { userId: { $in: userIds } } },
+      {
+        $group: {
+          _id: '$userId',
+          totalPosts: { $sum: 1 },
+          approvedPosts: {
+            $sum: {
+              $cond: [{ $eq: ['$approvalStatus', 'approved'] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
+    const countsMap = new Map(postCounts.map((item) => [String(item._id), item]));
+
+    res.json({
+      success: true,
+      data: users.map((user) => {
+        const counts = countsMap.get(String(user._id));
+        return {
+          ...user,
+          totalPosts: counts?.totalPosts || 0,
+          approvedPosts: counts?.approvedPosts || 0,
+        };
+      }),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteBotUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const postCount = await Post.countDocuments({ userId: user._id });
+    if (postCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete a bot user who still has posts.',
+      });
+    }
+
+    await User.findByIdAndDelete(user._id);
+    res.json({ success: true, message: 'Bot user removed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const listAdminUsers = async (_req, res, next) => {
+  try {
+    const admins = await AdminUser.find().select('-password').sort({ createdAt: -1 });
+    res.json({ success: true, data: admins });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createAdminUser = async (req, res, next) => {
+  try {
+    const username = String(req.body.username || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+    const role = req.body.role === 'superadmin' ? 'superadmin' : 'admin';
+    const fieldErrors = {};
+
+    if (!username) fieldErrors.username = 'Username is required';
+    if (!password) fieldErrors.password = 'Password is required';
+    else if (password.length < 6) fieldErrors.password = 'Password must be at least 6 characters';
+
+    if (Object.keys(fieldErrors).length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please correct the admin form.',
+        fieldErrors,
+      });
+    }
+
+    const admin = await AdminUser.create({ username, password, role });
+    res.status(201).json({
+      success: true,
+      data: { id: admin._id, username: admin.username, role: admin.role, createdAt: admin.createdAt },
+      message: 'Admin user created',
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'This username is already in use.',
+        fieldErrors: { username: 'This username is already in use.' },
+      });
+    }
+    next(error);
+  }
+};
+
+const deleteAdminUser = async (req, res, next) => {
+  try {
+    if (String(req.admin._id) === String(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot delete your own admin account.',
+      });
+    }
+
+    const admin = await AdminUser.findById(req.params.id);
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Admin user not found' });
+    }
+
+    if (admin.role === 'superadmin') {
+      const superadminCount = await AdminUser.countDocuments({ role: 'superadmin' });
+      if (superadminCount <= 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'At least one superadmin account must remain.',
+        });
+      }
+    }
+
+    await AdminUser.findByIdAndDelete(admin._id);
+    res.json({ success: true, message: 'Admin user removed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getAnalytics = async (_req, res, next) => {
   try {
     const days = 7;
@@ -254,10 +439,16 @@ module.exports = {
   getDashboardStats,
   getPendingPosts,
   getAllPosts,
+  updatePost,
   getPostDetails,
   approve,
   reject,
   deletePost,
   toggleActive,
   getAnalytics,
+  listBotUsers,
+  deleteBotUser,
+  listAdminUsers,
+  createAdminUser,
+  deleteAdminUser,
 };

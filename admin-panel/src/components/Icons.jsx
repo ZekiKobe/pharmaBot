@@ -107,6 +107,34 @@ export function IconClose({ className = 'w-5 h-5' }) {
   );
 }
 
+export function IconUsers({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M18 18.72A8.96 8.96 0 0012 16.5a8.96 8.96 0 00-6 2.22m12 0A9.003 9.003 0 0021 12c0-4.97-4.03-9-9-9S3 7.03 3 12c0 2.73 1.216 5.176 3 6.72m12 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-6-2.28m9-9.72a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+}
+
+export function IconEdit({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 3.487a2.126 2.126 0 113.007 3.007L7.5 18.862 3 20l1.138-4.5 12.724-12.013z" />
+    </svg>
+  );
+}
+
+export function IconTrash({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.347 9m-4.786 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0115.916 21.75H8.084A2.25 2.25 0 015.84 19.673L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0V4.875c0-.621-.504-1.125-1.125-1.125h-3.75c-.621 0-1.125.504-1.125 1.125V5.25m7.5 0h-7.5" />
+    </svg>
+  );
+}
+
 export function IconArrowLeft({ className = 'w-4 h-4' }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

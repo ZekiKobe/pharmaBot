@@ -180,6 +180,9 @@ export default function PostDetail() {
                 Activate
               </button>
             )}
+            <Link to={`/posts/${post._id}/edit`} className="btn-secondary w-full xl:w-auto">
+              Edit
+            </Link>
             <button onClick={() => setShowDelete(true)} className="btn-danger w-full xl:w-auto">
               Delete permanently
             </button>
@@ -349,7 +352,7 @@ export default function PostDetail() {
       {showDeactivate && (
         <ConfirmModal
           title="Deactivate post?"
-          message="This will hide the post from the mini-app marketplace and remove it from Telegram channels. You can activate it again later."
+          message="This will hide the post from the mini-app marketplace. Existing Telegram posts will not be republished when you activate it later."
           confirmLabel="Deactivate"
           variant="danger"
           loading={actionLoading}
@@ -361,7 +364,7 @@ export default function PostDetail() {
       {showActivate && (
         <ConfirmModal
           title="Activate post?"
-          message="This will make the post visible in the mini-app again and republish it to Telegram channels."
+          message="This will make the post visible in the mini-app again without reposting it to Telegram."
           confirmLabel="Activate"
           variant="success"
           loading={actionLoading}

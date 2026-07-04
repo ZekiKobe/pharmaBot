@@ -82,6 +82,12 @@ export const api = {
 
   getPost: (id) => request(`/admin/posts/${id}`),
 
+  updateAdminPost: (id, payload) =>
+    request(`/admin/posts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
   approvePost: (id) =>
     request(`/admin/posts/${id}/approve`, { method: 'PATCH' }),
 
@@ -108,6 +114,22 @@ export const api = {
     request(`/admin/channels/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
 
   deleteChannel: (id) => request(`/admin/channels/${id}`, { method: 'DELETE' }),
+
+  getCategories: () => request('/categories'),
+
+  getBotUsers: (search = '') => request(`/admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+
+  deleteBotUser: (id) => request(`/admin/users/${id}`, { method: 'DELETE' }),
+
+  getAdminUsers: () => request('/admin/admin-users'),
+
+  createAdminUser: (payload) =>
+    request('/admin/admin-users', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  deleteAdminUser: (id) => request(`/admin/admin-users/${id}`, { method: 'DELETE' }),
 
   getUploadUrl: (path) => `${API_BASE}${path}`,
 };

@@ -3,12 +3,18 @@ const {
   getDashboardStats,
   getPendingPosts,
   getAllPosts,
+  updatePost,
   getPostDetails,
   approve,
   reject,
   deletePost,
   toggleActive,
   getAnalytics,
+  listBotUsers,
+  deleteBotUser,
+  listAdminUsers,
+  createAdminUser,
+  deleteAdminUser,
 } = require('../controllers/adminController');
 const {
   listChannels,
@@ -25,6 +31,11 @@ router.use(authAdmin);
 
 router.get('/dashboard', getDashboardStats);
 router.get('/analytics', getAnalytics);
+router.get('/users', listBotUsers);
+router.delete('/users/:id', deleteBotUser);
+router.get('/admin-users', listAdminUsers);
+router.post('/admin-users', requireSuperadmin, createAdminUser);
+router.delete('/admin-users/:id', requireSuperadmin, deleteAdminUser);
 router.get('/settings', getSettings);
 router.patch('/settings', requireSuperadmin, updateSettings);
 router.get('/channels', listChannels);
@@ -34,6 +45,7 @@ router.delete('/channels/:id', deleteChannel);
 router.get('/posts/pending', getPendingPosts);
 router.get('/posts', getAllPosts);
 router.get('/posts/:id', getPostDetails);
+router.patch('/posts/:id', updatePost);
 router.patch('/posts/:id/approve', approve);
 router.patch('/posts/:id/reject', reject);
 router.patch('/posts/:id/active', toggleActive);
