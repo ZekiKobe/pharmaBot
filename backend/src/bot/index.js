@@ -87,8 +87,7 @@ const createBot = () => {
         `• Create buyer requests\n` +
         `• List medicines for sale\n` +
         `• Browse latest posts\n\n` +
-        `Tap *Open App* or *ጀምር* to open the marketplace.\n\n` +
-        `Each post costs *ETB ${process.env.POST_PRICE || 20}*.`,
+        `Tap *Open App* or *ጀምር* to open the marketplace.`,
       { parse_mode: 'Markdown', ...keyboard }
     );
   });
