@@ -6,8 +6,8 @@ function getEnvBackedDefaults() {
   return {
     botDisplayName: process.env.TELEGRAM_BOT_DISPLAY_NAME || 'PharmaBot',
     botUsername: String(process.env.TELEGRAM_BOT_USERNAME || '').replace(/^@/, ''),
-    cbeAccountNumber: process.env.CBE_ACCOUNT_NUMBER || '1000262694392',
-    telebirrPhone: process.env.TELEBIRR_PHONE || '0993676861',
+    cbeAccountNumber: process.env.CBE_ACCOUNT_NUMBER || '',
+    telebirrPhone: process.env.TELEBIRR_PHONE || '',
   };
 }
 

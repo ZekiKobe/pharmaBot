@@ -9,6 +9,26 @@ const {
   deleteMyPost,
 } = require('../services/postService');
 
+const toPublicPost = (post) => ({
+  _id: post._id,
+  type: post.type,
+  medicineName: post.medicineName,
+  brand: post.brand,
+  strength: post.strength,
+  quantity: post.quantity,
+  price: post.price,
+  expiryDate: post.expiryDate,
+  city: post.city,
+  description: post.description,
+  contactPhone: post.contactPhone,
+  telegramUsername: post.telegramUsername,
+  category: post.category,
+  medicineImage: post.medicineImage,
+  approvedAt: post.approvedAt,
+  createdAt: post.createdAt,
+  updatedAt: post.updatedAt,
+});
+
 const createBuyerPost = async (req, res, next) => {
   try {
     const post = await createPost(attachMedicineImage(req.body, req.file), 'buyer');
@@ -103,7 +123,7 @@ const getApprovedPosts = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: posts,
+      data: posts.map(toPublicPost),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
@@ -123,7 +143,7 @@ const getPostById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
-    res.json({ success: true, data: post });
+    res.json({ success: true, data: toPublicPost(post) });
   } catch (error) {
     next(error);
   }

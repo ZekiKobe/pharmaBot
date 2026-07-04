@@ -42,7 +42,10 @@ export default function SellerForm() {
   };
 
   useEffect(() => {
-    api.getCategories().then((res) => setCategories(res.data || [])).catch(console.error);
+    api
+      .getCategories()
+      .then((res) => setCategories(res.data || []))
+      .catch(() => setError('Failed to load categories. Please try again.'));
   }, []);
 
   useEffect(() => {

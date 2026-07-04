@@ -9,6 +9,7 @@ export default function Home() {
   const [sellerPosts, setSellerPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -21,7 +22,7 @@ export default function Home() {
         setSellerPosts(sellers.data);
         setCategories(cats.data);
       })
-      .catch(console.error)
+      .catch(() => setError('Failed to load marketplace data. Please try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -67,6 +68,12 @@ export default function Home() {
           </Link>
         </div>
       </div>
+
+      {error && (
+        <div className="app-card mb-5 border-red-200 text-sm text-red-500">
+          {error}
+        </div>
+      )}
 
       {categories.length > 0 && (
         <section className="mb-6">

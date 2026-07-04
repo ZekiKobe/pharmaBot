@@ -1,6 +1,6 @@
 import { ApiError } from '../utils/apiError';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
 const API_BASE = API_URL.replace(/\/api$/, '');
 function getToken() {
   return localStorage.getItem('admin_token');

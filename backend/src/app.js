@@ -11,8 +11,24 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-app.use(cors());
-app.use(morgan('dev'));
+const corsOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors(
+    corsOrigins.length
+      ? {
+          origin: corsOrigins,
+        }
+      : undefined
+  )
+);
+
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

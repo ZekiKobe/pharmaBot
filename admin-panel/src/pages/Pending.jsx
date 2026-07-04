@@ -11,13 +11,22 @@ export default function Pending() {
   const { showToast } = useToast();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [rejectPost, setRejectPost] = useState(null);
   const [confirmApprove, setConfirmApprove] = useState(null);
   const [approveLoading, setApproveLoading] = useState(false);
 
   const loadPosts = () => {
     setLoading(true);
-    api.getPendingPosts().then((res) => setPosts(res.data)).catch(console.error).finally(() => setLoading(false));
+    setError('');
+    api
+      .getPendingPosts()
+      .then((res) => setPosts(res.data))
+      .catch(() => {
+        setPosts([]);
+        setError('Failed to load pending posts.');
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => { loadPosts(); }, []);
@@ -47,6 +56,12 @@ export default function Pending() {
           Approve or reject here, or from Telegram bot notifications. Either side works; already-reviewed posts are blocked on the other.
         </p>
       </div>
+
+      {error && (
+        <div className="card border-red-200 p-4 text-sm text-red-600">
+          {error}
+        </div>
+      )}
 
       {loading ? <LoadingSpinner /> : (
         <PostTable posts={posts} showActions onApprove={setConfirmApprove} onReject={setRejectPost} />

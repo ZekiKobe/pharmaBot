@@ -14,22 +14,33 @@ export default function Search() {
   const [cities, setCities] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    Promise.all([api.getCities(), api.getCategories()]).then(([c, cats]) => {
-      setCities(c.data);
-      setCategories(cats.data);
-    });
+    Promise.all([api.getCities(), api.getCategories()])
+      .then(([c, cats]) => {
+        setCities(c.data);
+        setCategories(cats.data);
+      })
+      .catch(() => setError('Failed to load search filters.'));
   }, []);
 
   useEffect(() => {
     setLoading(true);
+    setError('');
     const params = {};
     if (query) params.search = query;
     if (city) params.city = city;
     if (type) params.type = type;
     if (category) params.category = category;
-    api.getPosts(params).then((res) => setPosts(res.data)).catch(console.error).finally(() => setLoading(false));
+    api
+      .getPosts(params)
+      .then((res) => setPosts(res.data))
+      .catch(() => {
+        setPosts([]);
+        setError('Failed to load search results.');
+      })
+      .finally(() => setLoading(false));
   }, [query, city, type, category]);
 
   const handleSearch = (e) => {
@@ -87,6 +98,12 @@ export default function Search() {
           {categories.map((cat) => (
             <Chip key={cat._id} active={category === cat.slug} onClick={() => setCategory(cat.slug)}>{cat.name}</Chip>
           ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="app-card mt-4 text-sm text-red-500">
+          {error}
         </div>
       )}
 

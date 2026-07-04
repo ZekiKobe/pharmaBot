@@ -23,8 +23,12 @@ const seed = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     logger.info('Connected to MongoDB for seeding');
 
-    const username = process.env.ADMIN_USERNAME || 'admin';
-    const password = process.env.ADMIN_PASSWORD || 'admin123';
+    const username = process.env.ADMIN_USERNAME;
+    const password = process.env.ADMIN_PASSWORD;
+
+    if (!username || !password) {
+      throw new Error('ADMIN_USERNAME and ADMIN_PASSWORD must be set before running the seed script');
+    }
 
     const existingAdmin = await AdminUser.findOne({ username });
     if (!existingAdmin) {
@@ -39,8 +43,8 @@ const seed = async () => {
       {
         botDisplayName: process.env.TELEGRAM_BOT_DISPLAY_NAME || 'PharmaBot',
         botUsername: String(process.env.TELEGRAM_BOT_USERNAME || '').replace(/^@/, ''),
-        cbeAccountNumber: process.env.CBE_ACCOUNT_NUMBER || '1000262694392',
-        telebirrPhone: process.env.TELEBIRR_PHONE || '0993676861',
+        cbeAccountNumber: process.env.CBE_ACCOUNT_NUMBER || '',
+        telebirrPhone: process.env.TELEBIRR_PHONE || '',
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );

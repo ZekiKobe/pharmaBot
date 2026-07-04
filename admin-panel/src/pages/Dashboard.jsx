@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     Promise.all([api.getDashboard(), api.getAnalytics()])
@@ -18,12 +19,18 @@ export default function Dashboard() {
         setStats(statsRes.data);
         setAnalytics(analyticsRes.data);
       })
-      .catch(console.error)
+      .catch(() => setError('Failed to load dashboard data.'))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LoadingSpinner label="Loading dashboard..." />;
-  if (!stats) return null;
+  if (!stats) {
+    return (
+      <div className="card p-6 text-sm text-red-600">
+        {error || 'Dashboard data is unavailable.'}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 lg:space-y-8">
@@ -31,6 +38,12 @@ export default function Dashboard() {
         title="Dashboard"
         description="Monitor post activity, revenue, approvals, and channel operations from one place."
       />
+
+      {error && (
+        <div className="card border-red-200 p-4 text-sm text-red-600">
+          {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Total Posts" value={stats.totalPosts} icon={IconPosts} accent="blue" />

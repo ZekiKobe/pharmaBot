@@ -18,14 +18,19 @@ export default function MyPosts() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [postToDelete, setPostToDelete] = useState(null);
+  const [error, setError] = useState('');
 
   const loadPosts = () => {
     if (!telegramId) return;
     setLoading(true);
+    setError('');
     api
       .getMyPosts(telegramId)
       .then((res) => setPosts(res.data))
-      .catch(console.error)
+      .catch(() => {
+        setPosts([]);
+        setError('Failed to load your posts.');
+      })
       .finally(() => setLoading(false));
   };
 
@@ -49,9 +54,9 @@ export default function MyPosts() {
       haptic('success');
       setPostToDelete(null);
       loadPosts();
-    } catch (err) {
+    } catch {
       haptic('error');
-      console.error(err);
+      setError('Failed to delete the post. Please try again.');
     } finally {
       setDeletingId(null);
     }
@@ -69,6 +74,12 @@ export default function MyPosts() {
     <div className="app-container">
       <h1 className="text-xl font-bold text-tg-text">My Posts</h1>
       <p className="mt-1 text-sm text-tg-hint">Tap a post to view details</p>
+
+      {error && (
+        <div className="app-card mt-4 text-sm text-red-500">
+          {error}
+        </div>
+      )}
 
       {posts.length === 0 ? (
         <div className="app-card mt-6 py-10 text-center">
