@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmModal from '../components/ConfirmModal';
+import PageHeader from '../components/PageHeader';
 import { useToast } from '../components/Toast';
 import { IconCheck, IconX } from '../components/Icons';
 
@@ -96,7 +97,12 @@ export default function Channels() {
 
   return (
     <div className="space-y-6">
-      <div className="card p-5">
+      <PageHeader
+        title="Telegram Channels"
+        description="Manage where approved posts are published and keep the bot connected to the right channels."
+      />
+
+      <div className="card p-5 sm:p-6">
         <h3 className="text-base font-bold text-slate-900">
           {editingId ? 'Edit channel' : 'Add Telegram channel'}
         </h3>
@@ -104,7 +110,7 @@ export default function Channels() {
           Approved posts are published to all active channels. The bot must be an admin in each channel.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-5 grid gap-4 sm:grid-cols-2">
+        <form onSubmit={handleSubmit} className="mt-5 grid gap-4 md:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
               Channel name
@@ -158,7 +164,7 @@ export default function Channels() {
             />
             Default channel
           </label>
-          <div className="flex gap-2 sm:col-span-2">
+          <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row">
             <button type="submit" disabled={saving} className="btn-primary">
               {saving ? 'Saving...' : editingId ? 'Update channel' : 'Add channel'}
             </button>
@@ -174,7 +180,7 @@ export default function Channels() {
       </div>
 
       <div className="card overflow-hidden">
-        <div className="border-b border-slate-100 px-5 py-4">
+        <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
           <h3 className="font-bold text-slate-900">Configured channels</h3>
           <p className="text-sm text-slate-500">{channels.length} channel{channels.length !== 1 ? 's' : ''}</p>
         </div>
@@ -188,8 +194,8 @@ export default function Channels() {
         ) : (
           <div className="divide-y divide-slate-100">
             {channels.map((channel) => (
-              <div key={channel._id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
+              <div key={channel._id} className="flex flex-col gap-4 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-slate-900">{channel.name}</p>
                     {channel.isDefault && (
@@ -206,10 +212,10 @@ export default function Channels() {
                       {channel.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  <p className="mt-1 font-mono text-sm text-slate-600">{channel.telegramChannelId}</p>
+                  <p className="mt-1 break-all font-mono text-sm text-slate-600">{channel.telegramChannelId}</p>
                   {channel.description && <p className="mt-1 text-sm text-slate-500">{channel.description}</p>}
                 </div>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:flex">
                   <button type="button" onClick={() => startEdit(channel)} className="btn-secondary py-2 text-xs">
                     Edit
                   </button>
@@ -223,7 +229,7 @@ export default function Channels() {
         )}
       </div>
 
-      <div className="card border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+      <div className="card border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 sm:p-6">
         <p className="font-semibold">Bot admin approval</p>
         <p className="mt-1 text-amber-800">
           Set <code className="rounded bg-white/70 px-1">ADMIN_TELEGRAM_IDS</code> in backend .env so Telegram admins

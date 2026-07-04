@@ -1,6 +1,6 @@
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { CHART_COLORS } from './StatCard';
 
@@ -54,31 +54,50 @@ const STATUS_LABELS = {
   draft: 'Draft', pending: 'Pending', approved: 'Approved', rejected: 'Rejected',
 };
 
+function PieLegend({ items, colors }) {
+  return (
+    <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-slate-600">
+      {items.map((item, index) => (
+        <div key={`${item.name}-${index}`} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
+          <span
+            className="h-2.5 w-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: colors[index % colors.length] }}
+          />
+          <span className="truncate">{item.name}</span>
+          <span className="ml-auto font-semibold text-slate-900">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function StatusPieChart({ data }) {
   const chartData = data
     .filter((d) => d.value > 0)
     .map((d) => ({ ...d, name: STATUS_LABELS[d.name] || d.name }));
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <PieChart>
-        <Pie
-          data={chartData}
-          cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={90}
-          paddingAngle={3}
-          dataKey="value"
-        >
-          {chartData.map((_, i) => (
-            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-      </PieChart>
-    </ResponsiveContainer>
+    <div>
+      <ResponsiveContainer width="100%" height={240}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            innerRadius={52}
+            outerRadius={84}
+            paddingAngle={3}
+            dataKey="value"
+          >
+            {chartData.map((_, i) => (
+              <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip content={<ChartTooltip />} />
+        </PieChart>
+      </ResponsiveContainer>
+      <PieLegend items={chartData} colors={CHART_COLORS} />
+    </div>
   );
 }
 
@@ -89,15 +108,18 @@ export function TypePieChart({ data }) {
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <PieChart>
-        <Pie data={chartData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-          {chartData.map((_, i) => (
-            <Cell key={i} fill={i === 0 ? '#0d9488' : '#3b82f6'} />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
+    <div>
+      <ResponsiveContainer width="100%" height={220}>
+        <PieChart>
+          <Pie data={chartData} cx="50%" cy="50%" innerRadius={42} outerRadius={78} dataKey="value">
+            {chartData.map((_, i) => (
+              <Cell key={i} fill={i === 0 ? '#0d9488' : '#3b82f6'} />
+            ))}
+          </Pie>
+          <Tooltip content={<ChartTooltip />} />
+        </PieChart>
+      </ResponsiveContainer>
+      <PieLegend items={chartData} colors={['#0d9488', '#3b82f6']} />
+    </div>
   );
 }

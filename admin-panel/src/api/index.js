@@ -55,9 +55,23 @@ export const api = {
 
   getProfile: () => request('/auth/me'),
 
+  changePassword: (payload) =>
+    request('/auth/password', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
   getDashboard: () => request('/admin/dashboard'),
 
   getAnalytics: () => request('/admin/analytics'),
+
+  getSettings: () => request('/admin/settings'),
+
+  updateSettings: (payload) =>
+    request('/admin/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
 
   getPendingPosts: (page = 1) => request(`/admin/posts/pending?page=${page}`),
 

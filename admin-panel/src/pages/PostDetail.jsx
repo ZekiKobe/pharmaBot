@@ -8,11 +8,17 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { useToast } from '../components/Toast';
 import { IconArrowLeft, IconCheck, IconX } from '../components/Icons';
 
+const formatCategoryLabel = (value) =>
+  String(value || '')
+    .replace(/-/g, ' ')
+    .replace(/\band\b/gi, '&')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
 function DetailRow({ label, value, highlight }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-50 py-3 last:border-0">
+    <div className="flex flex-col gap-1 border-b border-slate-50 py-3 last:border-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <dt className="shrink-0 text-sm text-slate-500">{label}</dt>
-      <dd className={`text-right text-sm font-medium ${highlight ? 'text-emerald-600' : 'text-slate-900'}`}>
+      <dd className={`text-sm font-medium sm:text-right ${highlight ? 'text-emerald-600' : 'text-slate-900'}`}>
         {value}
       </dd>
     </div>
@@ -121,17 +127,17 @@ export default function PostDetail() {
   const isActive = post.isActive !== false;
 
   return (
-    <div>
+    <div className="space-y-6">
       <Link
         to="/posts"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
       >
         <IconArrowLeft />
         Back to all posts
       </Link>
 
-      <div className="card mb-6 p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="card p-5 sm:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <TypeBadge type={post.type} />
@@ -151,39 +157,39 @@ export default function PostDetail() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:flex-wrap">
             {post.approvalStatus === 'pending' && (
               <>
-                <button onClick={() => setShowApprove(true)} className="btn-success">
+                <button onClick={() => setShowApprove(true)} className="btn-success w-full xl:w-auto">
                   <IconCheck />
                   Approve
                 </button>
-                <button onClick={() => setShowReject(true)} className="btn-danger">
+                <button onClick={() => setShowReject(true)} className="btn-danger w-full xl:w-auto">
                   <IconX />
                   Reject
                 </button>
               </>
             )}
             {isApproved && isActive && (
-              <button onClick={() => setShowDeactivate(true)} className="btn-secondary">
+              <button onClick={() => setShowDeactivate(true)} className="btn-secondary w-full xl:w-auto">
                 Deactivate
               </button>
             )}
             {isApproved && !isActive && (
-              <button onClick={() => setShowActivate(true)} className="btn-success">
+              <button onClick={() => setShowActivate(true)} className="btn-success w-full xl:w-auto">
                 Activate
               </button>
             )}
-            <button onClick={() => setShowDelete(true)} className="btn-danger">
+            <button onClick={() => setShowDelete(true)} className="btn-danger w-full xl:w-auto">
               Delete permanently
             </button>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
         <div className="space-y-6 lg:col-span-3">
-          <div className="card p-6">
+          <div className="card p-5 sm:p-6">
             <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-slate-400">
               Medicine Details
             </h2>
@@ -193,6 +199,7 @@ export default function PostDetail() {
                 value={`${post.medicineName}${post.strength ? ` ${post.strength}` : ''}`}
               />
               {post.brand && <DetailRow label="Brand" value={post.brand} />}
+              {!isBuyer && post.category && <DetailRow label="Category" value={formatCategoryLabel(post.category)} />}
               <DetailRow label="Quantity" value={post.quantity} />
               {!isBuyer && post.price && (
                 <DetailRow label="Price" value={`ETB ${post.price}`} highlight />
@@ -211,7 +218,7 @@ export default function PostDetail() {
           </div>
 
           {screenshot && (
-            <div className="card p-6">
+            <div className="card p-5 sm:p-6">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
                 Payment Screenshot
               </h2>
@@ -232,7 +239,7 @@ export default function PostDetail() {
           )}
 
           {post.medicineImage && (
-            <div className="card p-6">
+            <div className="card p-5 sm:p-6">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
                 Medicine / Prescription Photo
               </h2>
@@ -254,7 +261,7 @@ export default function PostDetail() {
         </div>
 
         <div className="space-y-6 lg:col-span-2">
-          <div className="card p-6">
+          <div className="card p-5 sm:p-6">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
               Contact
             </h2>
@@ -267,7 +274,7 @@ export default function PostDetail() {
           </div>
 
           {post.userId && (
-            <div className="card p-6">
+            <div className="card p-5 sm:p-6">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
                 User
               </h2>
@@ -288,7 +295,7 @@ export default function PostDetail() {
             </div>
           )}
 
-          <div className="card p-6">
+          <div className="card p-5 sm:p-6">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
               Payment
             </h2>

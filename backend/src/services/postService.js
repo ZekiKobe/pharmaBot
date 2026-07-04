@@ -5,6 +5,7 @@ const { getBot } = require('../bot/botInstance');
 const { publishPostToChannels, unpublishPostFromChannels } = require('./channelService');
 const { notifyAdminsPendingPost } = require('./adminNotifyService');
 const { escapeHtml } = require('./telegramService');
+const { getAppSettings } = require('./settingsService');
 const logger = require('../utils/logger');
 
 const POST_PRICE = parseInt(process.env.POST_PRICE, 10) || 20;
@@ -317,12 +318,15 @@ const setPostActive = async (postId, isActive) => {
   return post;
 };
 
-const getPaymentInfo = () => ({
-  cbeAccountNumber: process.env.CBE_ACCOUNT_NUMBER || '1000262694392',
-  telebirrPhone: process.env.TELEBIRR_PHONE || '0993676861',
-  amount: POST_PRICE,
-  currency: 'ETB',
-});
+const getPaymentInfo = async () => {
+  const settings = await getAppSettings();
+  return {
+    cbeAccountNumber: settings.cbeAccountNumber,
+    telebirrPhone: settings.telebirrPhone,
+    amount: POST_PRICE,
+    currency: 'ETB',
+  };
+};
 
 module.exports = {
   findOrCreateUser,

@@ -16,7 +16,8 @@ const {
   updateChannel,
   deleteChannel,
 } = require('../controllers/channelController');
-const { authAdmin } = require('../middleware/auth');
+const { getSettings, updateSettings } = require('../controllers/settingsController');
+const { authAdmin, requireSuperadmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -24,6 +25,8 @@ router.use(authAdmin);
 
 router.get('/dashboard', getDashboardStats);
 router.get('/analytics', getAnalytics);
+router.get('/settings', getSettings);
+router.patch('/settings', requireSuperadmin, updateSettings);
 router.get('/channels', listChannels);
 router.post('/channels', createChannel);
 router.patch('/channels/:id', updateChannel);

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const AdminUser = require('../models/AdminUser');
+const AppSettings = require('../models/AppSettings');
 const Category = require('../models/Category');
 const Channel = require('../models/Channel');
 const logger = require('../utils/logger');
@@ -32,6 +33,18 @@ const seed = async () => {
     } else {
       logger.info('Admin user already exists');
     }
+
+    await AppSettings.findOneAndUpdate(
+      { key: 'default' },
+      {
+        botDisplayName: process.env.TELEGRAM_BOT_DISPLAY_NAME || 'PharmaBot',
+        botUsername: String(process.env.TELEGRAM_BOT_USERNAME || '').replace(/^@/, ''),
+        cbeAccountNumber: process.env.CBE_ACCOUNT_NUMBER || '1000262694392',
+        telebirrPhone: process.env.TELEBIRR_PHONE || '0993676861',
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    logger.info('App settings seeded');
 
     for (const name of defaultCategories) {
       const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and');

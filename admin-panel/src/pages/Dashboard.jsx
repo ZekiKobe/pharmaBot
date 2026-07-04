@@ -4,6 +4,7 @@ import { api } from '../api';
 import StatCard from '../components/StatCard';
 import { PostsAreaChart, RevenueBarChart, StatusPieChart, TypePieChart } from '../components/Charts';
 import LoadingSpinner from '../components/LoadingSpinner';
+import PageHeader from '../components/PageHeader';
 import { IconDashboard, IconClock, IconPosts, IconTrending, IconChannel } from '../components/Icons';
 
 export default function Dashboard() {
@@ -25,7 +26,12 @@ export default function Dashboard() {
   if (!stats) return null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-8">
+      <PageHeader
+        title="Dashboard"
+        description="Monitor post activity, revenue, approvals, and channel operations from one place."
+      />
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Total Posts" value={stats.totalPosts} icon={IconPosts} accent="blue" />
         <StatCard title="Pending Review" value={stats.pendingPosts} icon={IconClock} accent="amber" />
@@ -41,22 +47,22 @@ export default function Dashboard() {
 
       {analytics && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="card p-6">
+          <div className="card p-5 sm:p-6">
             <h3 className="text-sm font-bold text-slate-900">Posts (Last 7 Days)</h3>
             <p className="mb-4 text-xs text-slate-400">New submissions per day</p>
             <PostsAreaChart data={analytics.postsByDay} />
           </div>
-          <div className="card p-6">
+          <div className="card p-5 sm:p-6">
             <h3 className="text-sm font-bold text-slate-900">Revenue (Last 7 Days)</h3>
             <p className="mb-4 text-xs text-slate-400">Approved payments (ETB)</p>
             <RevenueBarChart data={analytics.revenueByDay} />
           </div>
-          <div className="card p-6">
+          <div className="card p-5 sm:p-6">
             <h3 className="text-sm font-bold text-slate-900">Posts by Status</h3>
             <p className="mb-2 text-xs text-slate-400">Approval breakdown</p>
             <StatusPieChart data={analytics.byStatus} />
           </div>
-          <div className="card p-6">
+          <div className="card p-5 sm:p-6">
             <h3 className="text-sm font-bold text-slate-900">Buyer vs Seller</h3>
             <p className="mb-2 text-xs text-slate-400">Post type distribution</p>
             <TypePieChart data={analytics.byType} />
@@ -64,7 +70,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 p-6">
+      <div className="overflow-hidden rounded-2xl border border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-100 text-teal-600">
@@ -84,7 +90,7 @@ export default function Dashboard() {
       </div>
 
       {stats.pendingPosts > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-6">
+        <div className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">

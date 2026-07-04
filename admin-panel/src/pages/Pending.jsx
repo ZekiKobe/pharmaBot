@@ -4,6 +4,7 @@ import PostTable from '../components/PostTable';
 import RejectModal from '../components/RejectModal';
 import ConfirmModal from '../components/ConfirmModal';
 import LoadingSpinner from '../components/LoadingSpinner';
+import PageHeader from '../components/PageHeader';
 import { useToast } from '../components/Toast';
 
 export default function Pending() {
@@ -34,8 +35,13 @@ export default function Pending() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="space-y-6">
+      <PageHeader
+        title="Pending Review"
+        description="Review submitted payments and publish approved posts to Telegram channels."
+      />
+
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
         <p className="text-sm text-slate-500">{posts.length} post{posts.length !== 1 ? 's' : ''} awaiting review</p>
         <p className="mt-1 text-xs text-slate-400">
           Approve or reject here, or from Telegram bot notifications. Either side works; already-reviewed posts are blocked on the other.

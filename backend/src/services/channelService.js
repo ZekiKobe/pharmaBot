@@ -1,5 +1,6 @@
 const Channel = require('../models/Channel');
 const { formatChannelMessage } = require('./telegramService');
+const { getAppSettings } = require('./settingsService');
 const logger = require('../utils/logger');
 
 const getPublicBaseUrl = () =>
@@ -36,7 +37,8 @@ const publishPostToChannels = async (post, bot) => {
     return [];
   }
 
-  const message = formatChannelMessage(post);
+  const settings = await getAppSettings();
+  const message = formatChannelMessage(post, settings);
   const imageUrl = post.medicineImage ? `${getPublicBaseUrl()}${post.medicineImage}` : null;
   const published = [];
 

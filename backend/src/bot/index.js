@@ -3,6 +3,7 @@ const { setBot } = require('./botInstance');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const { approvePost, rejectPost, getPaymentInfo } = require('../services/postService');
+const { getAppSettings } = require('../services/settingsService');
 const { buildPendingReviewMessage } = require('../services/adminNotifyService');
 const logger = require('../utils/logger');
 
@@ -71,6 +72,7 @@ const createBot = () => {
     await setupMenuButton(bot, ctx.chat.id);
     await setupMenuButton(bot);
 
+    const settings = await getAppSettings();
     const miniAppUrl = getMiniAppUrl();
     const keyboard =
       miniAppUrl && !miniAppUrl.includes('example.com')
@@ -82,7 +84,7 @@ const createBot = () => {
         : {};
 
     await ctx.reply(
-      `Welcome to *PharmaBot* 💊\n\n` +
+      `Welcome to *${settings.botDisplayName}* 💊\n\n` +
         `Ethiopia's pharmaceutical marketplace on Telegram.\n\n` +
         `• Create buyer requests\n` +
         `• List medicines for sale\n` +
@@ -101,7 +103,7 @@ const createBot = () => {
   });
 
   bot.action('payment_info', async (ctx) => {
-    const info = getPaymentInfo();
+    const info = await getPaymentInfo();
     await ctx.answerCbQuery();
     await ctx.reply(
       `💳 *Payment Instructions*\n\n` +

@@ -12,10 +12,11 @@ const {
 const createBuyerPost = async (req, res, next) => {
   try {
     const post = await createPost(attachMedicineImage(req.body, req.file), 'buyer');
+    const paymentInfo = await getPaymentInfo();
     res.status(201).json({
       success: true,
       data: post,
-      paymentInfo: getPaymentInfo(),
+      paymentInfo,
       message: 'Buyer request created. Please complete payment.',
     });
   } catch (error) {
@@ -30,10 +31,11 @@ const createSellerPost = async (req, res, next) => {
       { ...body, expiryDate: new Date(body.expiryDate) },
       'seller'
     );
+    const paymentInfo = await getPaymentInfo();
     res.status(201).json({
       success: true,
       data: post,
-      paymentInfo: getPaymentInfo(),
+      paymentInfo,
       message: 'Seller listing created. Please complete payment.',
     });
   } catch (error) {
@@ -165,8 +167,13 @@ const getPostStatus = async (req, res, next) => {
   }
 };
 
-const getPaymentInstructions = async (_req, res) => {
-  res.json({ success: true, data: getPaymentInfo() });
+const getPaymentInstructions = async (_req, res, next) => {
+  try {
+    const paymentInfo = await getPaymentInfo();
+    res.json({ success: true, data: paymentInfo });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const getMyPostById = async (req, res, next) => {

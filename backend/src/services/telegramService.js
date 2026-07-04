@@ -1,11 +1,11 @@
-const BOT_DISPLAY_NAME = process.env.TELEGRAM_BOT_DISPLAY_NAME || 'PharmaBot';
-const BOT_USERNAME = (process.env.TELEGRAM_BOT_USERNAME || '').replace('@', '');
-
 const escapeHtml = (value) =>
   String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+
+const getDisplayName = (settings) => settings?.botDisplayName || 'PharmaBot';
+const getBotUsername = (settings) => String(settings?.botUsername || '').replace(/^@/, '');
 
 const postTitle = (post) => {
   if (post.type === 'seller') {
@@ -21,10 +21,11 @@ const postSubtitle = (post) => {
   return '<i>Buyer request from Ethiopian Pharma Marketplace</i>';
 };
 
-const buildFooter = () => {
-  const botLine = BOT_USERNAME
-    ? `<a href="https://t.me/${escapeHtml(BOT_USERNAME)}">@${escapeHtml(BOT_USERNAME)}</a>`
-    : escapeHtml(BOT_DISPLAY_NAME);
+const buildFooter = (settings) => {
+  const botUsername = getBotUsername(settings);
+  const botLine = botUsername
+    ? `<a href="https://t.me/${escapeHtml(botUsername)}">@${escapeHtml(botUsername)}</a>`
+    : escapeHtml(getDisplayName(settings));
 
   return `📲 <i>Post or find medicines via ${botLine}</i>`;
 };
@@ -59,7 +60,7 @@ const formatCategoryLabel = (slug) =>
     .replace(/\band\b/gi, '&')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-const formatSellerPost = (post) => {
+const formatSellerPost = (post, settings) => {
   const parts = [
     postTitle(post),
     postSubtitle(post),
@@ -79,13 +80,13 @@ const formatSellerPost = (post) => {
     '',
     formatContactBlock(post, 'Seller'),
     '',
-    buildFooter(),
+    buildFooter(settings),
   ];
 
   return parts.filter((line) => line !== null).join('\n');
 };
 
-const formatBuyerPost = (post) => {
+const formatBuyerPost = (post, settings) => {
   const parts = [
     postTitle(post),
     postSubtitle(post),
@@ -99,14 +100,14 @@ const formatBuyerPost = (post) => {
     '',
     formatContactBlock(post, 'Buyer'),
     '',
-    buildFooter(),
+    buildFooter(settings),
   ];
 
   return parts.filter((line) => line !== null).join('\n');
 };
 
-const formatChannelMessage = (post) =>
-  post.type === 'seller' ? formatSellerPost(post) : formatBuyerPost(post);
+const formatChannelMessage = (post, settings) =>
+  post.type === 'seller' ? formatSellerPost(post, settings) : formatBuyerPost(post, settings);
 
 module.exports = {
   escapeHtml,
