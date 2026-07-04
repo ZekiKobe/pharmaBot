@@ -26,6 +26,13 @@ export default function Search() {
   }, []);
 
   useEffect(() => {
+    setQuery(searchParams.get('search') || '');
+    setCity(searchParams.get('city') || '');
+    setType(searchParams.get('type') || '');
+    setCategory(searchParams.get('category') || '');
+  }, [searchParams]);
+
+  useEffect(() => {
     setLoading(true);
     setError('');
     const params = {};
@@ -43,14 +50,23 @@ export default function Search() {
       .finally(() => setLoading(false));
   }, [query, city, type, category]);
 
+  const updateSearchParams = (next) => {
+    const params = new URLSearchParams(searchParams);
+
+    Object.entries(next).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+
+    setSearchParams(params);
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
-    const p = {};
-    if (query) p.search = query;
-    if (city) p.city = city;
-    if (type) p.type = type;
-    if (category) p.category = category;
-    setSearchParams(p);
+    updateSearchParams({ search: query, city, type, category });
   };
 
   const Chip = ({ active, onClick, children }) => (
@@ -80,13 +96,13 @@ export default function Search() {
       </form>
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-        <Chip active={!type} onClick={() => setType('')}>All</Chip>
-        <Chip active={type === 'buyer'} onClick={() => setType('buyer')}>Buyer</Chip>
-        <Chip active={type === 'seller'} onClick={() => setType('seller')}>Seller</Chip>
+        <Chip active={!type} onClick={() => updateSearchParams({ type: '' })}>All</Chip>
+        <Chip active={type === 'buyer'} onClick={() => updateSearchParams({ type: 'buyer' })}>Buyer</Chip>
+        <Chip active={type === 'seller'} onClick={() => updateSearchParams({ type: 'seller' })}>Seller</Chip>
       </div>
 
       {cities.length > 0 && (
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="app-input mt-3">
+        <select value={city} onChange={(e) => updateSearchParams({ city: e.target.value })} className="app-input mt-3">
           <option value="">All cities</option>
           {cities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
@@ -94,9 +110,9 @@ export default function Search() {
 
       {categories.length > 0 && (
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          <Chip active={!category} onClick={() => setCategory('')}>All categories</Chip>
+          <Chip active={!category} onClick={() => updateSearchParams({ category: '' })}>All categories</Chip>
           {categories.map((cat) => (
-            <Chip key={cat._id} active={category === cat.slug} onClick={() => setCategory(cat.slug)}>{cat.name}</Chip>
+            <Chip key={cat._id} active={category === cat.slug} onClick={() => updateSearchParams({ category: cat.slug })}>{cat.name}</Chip>
           ))}
         </div>
       )}

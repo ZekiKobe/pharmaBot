@@ -12,9 +12,25 @@ const navItems = [
 
 export default function Layout() {
   const location = useLocation();
-  const { webApp } = useTelegram();
+  const { webApp, ready } = useTelegram();
   const isHome = location.pathname === '/';
   const inTelegram = Boolean(webApp);
+
+  if (!ready) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-tg-bg px-6 text-center text-tg-text">
+        <div
+          className="h-11 w-11 animate-spin rounded-full border-2 border-t-transparent"
+          style={{
+            borderColor: 'color-mix(in srgb, var(--tg-theme-button-color, #0d9488) 28%, transparent)',
+            borderTopColor: 'var(--tg-theme-button-color, #0d9488)',
+          }}
+        />
+        <h1 className="mt-5 text-lg font-bold">Getting Things Ready...</h1>
+        <p className="mt-1.5 text-sm text-tg-hint">Loading your marketplace experience</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-tg-bg text-tg-text">
