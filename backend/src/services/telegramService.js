@@ -7,30 +7,26 @@ const escapeHtml = (value) =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-const divider = '━━━━━━━━━━━━━━━━━━━━━━';
-
-const typeBadge = (post) => {
+const postTitle = (post) => {
   if (post.type === 'seller') {
-    return '🟢 <b>FOR SALE</b>  ·  Medicine listed';
+    return '💊 <b>Medicine for Sale</b>';
   }
-  return '🔵 <b>BUYER REQUEST</b>  ·  Looking for medicine';
+  return '🔎 <b>Wanted to Buy</b>';
 };
 
-const buildHeader = () =>
-  `${divider}\n` +
-  `💊 <b>${escapeHtml(BOT_DISPLAY_NAME)}</b>\n` +
-  `<i>Ethiopian Pharma Marketplace</i>\n` +
-  `${divider}`;
+const postSubtitle = (post) => {
+  if (post.type === 'seller') {
+    return '<i>Seller listing from Ethiopian Pharma Marketplace</i>';
+  }
+  return '<i>Buyer request from Ethiopian Pharma Marketplace</i>';
+};
 
 const buildFooter = () => {
   const botLine = BOT_USERNAME
     ? `<a href="https://t.me/${escapeHtml(BOT_USERNAME)}">@${escapeHtml(BOT_USERNAME)}</a>`
     : escapeHtml(BOT_DISPLAY_NAME);
 
-  return (
-    `\n${divider}\n` +
-    `📲 <i>List or find medicines via ${botLine}</i>`
-  );
+  return `📲 <i>Post or find medicines via ${botLine}</i>`;
 };
 
 const formatUsername = (username) => {
@@ -42,13 +38,20 @@ const formatUsername = (username) => {
 const formatMedicineTitle = (post) => {
   const name = escapeHtml(post.medicineName);
   const strength = post.strength ? ` <i>${escapeHtml(post.strength)}</i>` : '';
-  return `💊 <b>${name}</b>${strength}`;
+  return `<b>${name}</b>${strength}`;
 };
 
-const formatContactBlock = (post) =>
-  `📞 <b>Contact</b>\n` +
-  `   ${formatUsername(post.telegramUsername)}\n` +
-  `   <code>${escapeHtml(post.contactPhone)}</code>`;
+const detailLine = (label, value) => (value ? `• <b>${label}:</b> ${value}` : null);
+
+const formatContactBlock = (post, roleLabel) =>
+  `📞 <b>Contact ${roleLabel}</b>\n` +
+  `${detailLine('Telegram', formatUsername(post.telegramUsername))}\n` +
+  `${detailLine('Phone', `<code>${escapeHtml(post.contactPhone)}</code>`)}`;
+
+const formatDescriptionBlock = (post) =>
+  post.description
+    ? `📝 <b>Details</b>\n${escapeHtml(post.description)}`
+    : null;
 
 const formatCategoryLabel = (slug) =>
   String(slug)
@@ -58,24 +61,24 @@ const formatCategoryLabel = (slug) =>
 
 const formatSellerPost = (post) => {
   const parts = [
-    buildHeader(),
-    '',
-    typeBadge(post),
+    postTitle(post),
+    postSubtitle(post),
     '',
     formatMedicineTitle(post),
-    post.brand ? `🏷 <b>Brand</b>     ${escapeHtml(post.brand)}` : null,
-    post.category ? `🏷 <b>Category</b> ${escapeHtml(formatCategoryLabel(post.category))}` : null,
-    `📦 <b>Quantity</b>  ${escapeHtml(post.quantity)}`,
-    post.price != null && post.price !== ''
-      ? `💰 <b>Price</b>      <b>ETB ${escapeHtml(post.price)}</b>`
-      : null,
-    `📍 <b>City</b>       ${escapeHtml(post.city)}`,
-    post.expiryDate
-      ? `📅 <b>Expiry</b>    ${escapeHtml(new Date(post.expiryDate).toLocaleDateString('en-ET'))}`
-      : null,
-    post.description ? `\n📝 <i>${escapeHtml(post.description)}</i>` : null,
     '',
-    formatContactBlock(post),
+    '📦 <b>Listing Details</b>',
+    detailLine('Brand', escapeHtml(post.brand)),
+    post.category ? detailLine('Category', escapeHtml(formatCategoryLabel(post.category))) : null,
+    detailLine('Quantity', escapeHtml(post.quantity)),
+    post.price != null && post.price !== '' ? detailLine('Price', `<b>ETB ${escapeHtml(post.price)}</b>`) : null,
+    detailLine('City', escapeHtml(post.city)),
+    post.expiryDate
+      ? detailLine('Expiry', escapeHtml(new Date(post.expiryDate).toLocaleDateString('en-ET')))
+      : null,
+    formatDescriptionBlock(post),
+    '',
+    formatContactBlock(post, 'Seller'),
+    '',
     buildFooter(),
   ];
 
@@ -84,16 +87,18 @@ const formatSellerPost = (post) => {
 
 const formatBuyerPost = (post) => {
   const parts = [
-    buildHeader(),
-    '',
-    typeBadge(post),
+    postTitle(post),
+    postSubtitle(post),
     '',
     formatMedicineTitle(post),
-    `📦 <b>Quantity</b>  ${escapeHtml(post.quantity)}`,
-    `📍 <b>City</b>       ${escapeHtml(post.city)}`,
-    post.description ? `\n📝 <i>${escapeHtml(post.description)}</i>` : null,
     '',
-    formatContactBlock(post),
+    '🛒 <b>Request Details</b>',
+    detailLine('Quantity Needed', escapeHtml(post.quantity)),
+    detailLine('City', escapeHtml(post.city)),
+    formatDescriptionBlock(post),
+    '',
+    formatContactBlock(post, 'Buyer'),
+    '',
     buildFooter(),
   ];
 
