@@ -55,6 +55,30 @@ export function IconMapPin({ className = 'w-4 h-4' }) {
   );
 }
 
+export function IconPhone({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 4.5A2.25 2.25 0 014.5 2.25h2.386c.51 0 .955.345 1.082.838l1.105 4.288a1.125 1.125 0 01-.592 1.277l-1.328.664a11.036 11.036 0 005.202 5.202l.664-1.328a1.125 1.125 0 011.277-.592l4.288 1.105c.493.127.838.572.838 1.082V19.5a2.25 2.25 0 01-2.25 2.25h-1.5C8.26 21.75 2.25 15.74 2.25 8.25V6.75 4.5z"
+      />
+    </svg>
+  );
+}
+
+export function IconTelegram({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21.75 4.5L3.75 11.625l5.625 2.25m12.375-9.375L9.375 13.875m12.375-9.375l-3.375 15-5.25-5.625m0 0l-2.25 4.125v-6.375"
+      />
+    </svg>
+  );
+}
+
 export function IconArrowLeft({ className = 'w-5 h-5' }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

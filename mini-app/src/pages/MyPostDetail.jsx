@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
 import { IconArrowLeft, IconMapPin } from '../components/Icons';
+import ContactSection from '../components/ContactSection';
 import ConfirmModal from '../components/ConfirmModal';
 import { formatCategoryLabel } from '../utils/category';
 
@@ -93,6 +94,22 @@ export default function MyPostDetail() {
       </button>
 
       <div className="app-card">
+        {post.medicineImage && (
+          <div
+            className="mb-4 rounded-xl p-3"
+            style={{
+              backgroundColor:
+                'color-mix(in srgb, var(--tg-theme-hint-color) 10%, var(--tg-theme-secondary-bg-color))',
+            }}
+          >
+            <p className="text-[10px] font-bold uppercase text-tg-hint">Medicine / Prescription</p>
+            <img
+              src={api.getUploadUrl(post.medicineImage)}
+              alt="Medicine"
+              className="mt-2 max-h-56 w-full rounded-lg object-contain"
+            />
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span
             className="inline-block rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase"
@@ -135,43 +152,12 @@ export default function MyPostDetail() {
                   'color-mix(in srgb, var(--tg-theme-hint-color) 10%, var(--tg-theme-secondary-bg-color))',
               }}
             >
-              <p className="text-[10px] font-bold uppercase text-tg-hint">Description</p>
-              <p className="mt-1 text-sm text-tg-text">{post.description}</p>
-            </div>
-          )}
-          {post.medicineImage && (
-            <div
-              className="rounded-xl p-3"
-              style={{
-                backgroundColor:
-                  'color-mix(in srgb, var(--tg-theme-hint-color) 10%, var(--tg-theme-secondary-bg-color))',
-              }}
-            >
-              <p className="text-[10px] font-bold uppercase text-tg-hint">Medicine / Prescription</p>
-              <img
-                src={api.getUploadUrl(post.medicineImage)}
-                alt="Medicine"
-                className="mt-2 max-h-56 w-full rounded-lg object-contain"
-              />
+              <p className="text-sm text-tg-text">{post.description}</p>
             </div>
           )}
         </div>
 
-        <div
-          className="mt-6 rounded-xl p-4"
-          style={{
-            backgroundColor:
-              'color-mix(in srgb, var(--tg-theme-button-color) 12%, var(--tg-theme-secondary-bg-color))',
-          }}
-        >
-          <p className="text-[10px] font-bold uppercase text-tg-link">Contact</p>
-          {post.telegramUsername && (
-            <p className="mt-1 text-sm font-semibold text-tg-link">
-              @{post.telegramUsername.replace('@', '')}
-            </p>
-          )}
-          <p className="text-sm font-bold text-tg-text">{post.contactPhone}</p>
-        </div>
+        <ContactSection telegramUsername={post.telegramUsername} contactPhone={post.contactPhone} />
 
         {post.approvalStatus === 'approved' && post.isActive === false && (
           <p className="mt-4 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-400">

@@ -71,13 +71,15 @@ const createBot = () => {
     await setupMenuButton(bot, ctx.chat.id);
     await setupMenuButton(bot);
 
-    const keyboard = Markup.inlineKeyboard([
-      [
-        Markup.button.callback('💳 Payment Info', 'payment_info'),
-        Markup.button.callback('📋 My Posts', 'my_posts'),
-      ],
-      [Markup.button.callback('📞 Contact Admin', 'contact_admin')],
-    ]);
+    const miniAppUrl = getMiniAppUrl();
+    const keyboard =
+      miniAppUrl && !miniAppUrl.includes('example.com')
+        ? {
+            reply_markup: {
+              inline_keyboard: [[{ text: '🚀 Open App', web_app: { url: miniAppUrl } }]],
+            },
+          }
+        : {};
 
     await ctx.reply(
       `Welcome to *PharmaBot* 💊\n\n` +
@@ -85,7 +87,7 @@ const createBot = () => {
         `• Create buyer requests\n` +
         `• List medicines for sale\n` +
         `• Browse latest posts\n\n` +
-        `Tap *ጀምር* beside the message box to open the app.\n\n` +
+        `Tap *Open App* or *ጀምር* to open the marketplace.\n\n` +
         `Each post costs *ETB ${process.env.POST_PRICE || 20}*.`,
       { parse_mode: 'Markdown', ...keyboard }
     );
