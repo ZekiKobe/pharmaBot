@@ -143,7 +143,13 @@ export default function SellerForm() {
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
           <label className="app-label">Medicine Name *</label>
-          <input name="medicineName" value={form.medicineName} onChange={set} className={fieldClass(fieldErrors, 'medicineName')} />
+          <input
+            name="medicineName"
+            value={form.medicineName}
+            onChange={set}
+            className={fieldClass(fieldErrors, 'medicineName')}
+            placeholder="e.g. Paracetamol"
+          />
           <FieldError message={getFieldError(fieldErrors, 'medicineName')} />
         </div>
         <div>
@@ -161,24 +167,51 @@ export default function SellerForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="app-label">Brand *</label>
-            <input name="brand" value={form.brand} onChange={set} className={fieldClass(fieldErrors, 'brand')} />
+            <input
+              name="brand"
+              value={form.brand}
+              onChange={set}
+              className={fieldClass(fieldErrors, 'brand')}
+              placeholder="e.g. GSK"
+            />
             <FieldError message={getFieldError(fieldErrors, 'brand')} />
           </div>
           <div>
             <label className="app-label">Strength *</label>
-            <input name="strength" value={form.strength} onChange={set} className={fieldClass(fieldErrors, 'strength')} placeholder="500mg" />
+            <input
+              name="strength"
+              value={form.strength}
+              onChange={set}
+              className={fieldClass(fieldErrors, 'strength')}
+              placeholder="e.g. 500mg"
+            />
             <FieldError message={getFieldError(fieldErrors, 'strength')} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="app-label">Quantity *</label>
-            <input name="quantity" value={form.quantity} onChange={set} className={fieldClass(fieldErrors, 'quantity')} />
+            <input
+              name="quantity"
+              value={form.quantity}
+              onChange={set}
+              className={fieldClass(fieldErrors, 'quantity')}
+              placeholder="e.g. 50 Boxes"
+            />
             <FieldError message={getFieldError(fieldErrors, 'quantity')} />
           </div>
           <div>
             <label className="app-label">Price (ETB) *</label>
-            <input name="price" type="number" value={form.price} onChange={set} min="1" step="0.01" className={fieldClass(fieldErrors, 'price')} />
+            <input
+              name="price"
+              type="number"
+              value={form.price}
+              onChange={set}
+              min="1"
+              step="0.01"
+              className={fieldClass(fieldErrors, 'price')}
+              placeholder="e.g. 250"
+            />
             <FieldError message={getFieldError(fieldErrors, 'price')} />
           </div>
         </div>
@@ -197,7 +230,13 @@ export default function SellerForm() {
         </div>
         <div>
           <label className="app-label">Description</label>
-          <textarea name="description" value={form.description} onChange={set} className={`${fieldClass(fieldErrors, 'description')} min-h-24 resize-none`} />
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={set}
+            className={`${fieldClass(fieldErrors, 'description')} min-h-24 resize-none`}
+            placeholder="Additional details..."
+          />
           <FieldError message={getFieldError(fieldErrors, 'description')} />
         </div>
 
@@ -230,7 +269,13 @@ export default function SellerForm() {
         </div>
         <div>
           <label className="app-label">Telegram Username</label>
-          <input name="telegramUsername" value={form.telegramUsername} onChange={set} className={fieldClass(fieldErrors, 'telegramUsername')} />
+          <input
+            name="telegramUsername"
+            value={form.telegramUsername}
+            onChange={set}
+            className={fieldClass(fieldErrors, 'telegramUsername')}
+            placeholder="@username"
+          />
           <FieldError message={getFieldError(fieldErrors, 'telegramUsername')} />
         </div>
 
