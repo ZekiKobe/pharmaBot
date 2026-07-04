@@ -91,7 +91,9 @@ export default function Home() {
         {buyerPosts.length === 0 ? (
           <div className="app-card empty-state">No buyer requests yet</div>
         ) : (
-          buyerPosts.map((post) => <PostCard key={post._id} post={post} />)
+          <div className="grid grid-cols-2 gap-3">
+            {buyerPosts.map((post) => <PostCard key={post._id} post={post} />)}
+          </div>
         )}
       </section>
 
@@ -105,7 +107,9 @@ export default function Home() {
         {sellerPosts.length === 0 ? (
           <div className="app-card empty-state">No listings yet</div>
         ) : (
-          sellerPosts.map((post) => <PostCard key={post._id} post={post} />)
+          <div className="grid grid-cols-2 gap-3">
+            {sellerPosts.map((post) => <PostCard key={post._id} post={post} />)}
+          </div>
         )}
       </section>
     </div>

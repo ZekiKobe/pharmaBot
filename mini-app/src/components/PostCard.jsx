@@ -1,51 +1,88 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { IconMapPin } from './Icons';
+import api from '../api';
+import { IconMapPin, IconPill } from './Icons';
 
 export default function PostCard({ post }) {
   const isBuyer = post.type === 'buyer';
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageUrl = post.medicineImage && !imageFailed ? api.getUploadUrl(post.medicineImage) : null;
 
   return (
     <Link
       to={`/post/${post._id}`}
-      className="app-card mb-3 block transition-transform active:scale-[0.99]"
+      className="app-card block h-full transition-transform active:scale-[0.99]"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <span
-            className="inline-block rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-            style={{
-              backgroundColor: isBuyer
-                ? 'color-mix(in srgb, #38bdf8 18%, var(--tg-theme-secondary-bg-color))'
-                : 'color-mix(in srgb, var(--tg-theme-button-color) 18%, var(--tg-theme-secondary-bg-color))',
-              color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color, #2dd4bf)',
-            }}
-          >
-            {isBuyer ? 'Buyer Request' : 'For Sale'}
-          </span>
-          <h3 className="mt-2 truncate text-base font-bold text-tg-text">
-            {post.medicineName}
-            {post.strength && <span className="font-medium text-tg-hint"> {post.strength}</span>}
-          </h3>
-        </div>
+      <div
+        className="relative aspect-[4/3] overflow-hidden rounded-xl"
+        style={{
+          backgroundColor: 'color-mix(in srgb, var(--tg-theme-button-color, #0d9488) 10%, var(--tg-theme-secondary-bg-color))',
+        }}
+      >
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={post.medicineName}
+            className="h-full w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-full"
+              style={{
+                backgroundColor:
+                  'color-mix(in srgb, var(--tg-theme-button-color, #0d9488) 18%, var(--tg-theme-secondary-bg-color))',
+                color: 'var(--tg-theme-button-color, #0d9488)',
+              }}
+            >
+              <IconPill className="h-7 w-7" />
+            </div>
+          </div>
+        )}
         {!isBuyer && post.price && (
           <div
-            className="shrink-0 rounded-xl px-3 py-1.5 text-right"
-            style={{ backgroundColor: 'color-mix(in srgb, #34d399 15%, var(--tg-theme-secondary-bg-color))' }}
+            className="absolute right-2 top-2 rounded-xl px-2.5 py-1 text-right"
+            style={{ backgroundColor: 'color-mix(in srgb, #34d399 88%, white)' }}
           >
-            <p className="text-[10px] font-semibold uppercase text-emerald-500">Price</p>
-            <p className="text-sm font-bold text-emerald-600">ETB {post.price}</p>
+            <p className="text-[9px] font-semibold uppercase text-emerald-700">Price</p>
+            <p className="text-sm font-bold leading-none text-emerald-800">ETB {post.price}</p>
           </div>
         )}
       </div>
-      <div className="mt-3 flex items-center gap-3 text-xs text-tg-hint">
-        <span className="flex items-center gap-1">
-          <IconMapPin className="h-3.5 w-3.5" />
-          {post.city}
+      <div className="mt-3 min-w-0">
+        <span
+          className="inline-block rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+          style={{
+            backgroundColor: isBuyer
+              ? 'color-mix(in srgb, #38bdf8 18%, var(--tg-theme-secondary-bg-color))'
+              : 'color-mix(in srgb, var(--tg-theme-button-color) 18%, var(--tg-theme-secondary-bg-color))',
+            color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color, #2dd4bf)',
+          }}
+        >
+          {isBuyer ? 'Buyer Request' : 'For Sale'}
         </span>
-        <span style={{ color: 'color-mix(in srgb, var(--tg-theme-hint-color) 50%, transparent)' }}>|</span>
-        <span>Qty: {post.quantity}</span>
+        <h3
+          className="mt-2 text-sm font-bold leading-5 text-tg-text"
+          style={{
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 2,
+            overflow: 'hidden',
+          }}
+        >
+          {post.medicineName}
+          {post.strength && <span className="font-medium text-tg-hint"> {post.strength}</span>}
+        </h3>
+        <div className="mt-2 space-y-1 text-xs text-tg-hint">
+          <span className="flex items-center gap-1">
+            <IconMapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{post.city}</span>
+          </span>
+          <p className="truncate">Qty: {post.quantity}</p>
+          {post.brand && <p className="truncate">{post.brand}</p>}
+        </div>
       </div>
-      {post.brand && <p className="mt-1 text-xs text-tg-hint">{post.brand}</p>}
     </Link>
   );
 }

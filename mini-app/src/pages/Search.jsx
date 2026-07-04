@@ -95,7 +95,11 @@ export default function Search() {
           <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-200 border-t-teal-600" /></div>
         ) : posts.length === 0 ? (
           <div className="app-card empty-state">No results found</div>
-        ) : posts.map((post) => <PostCard key={post._id} post={post} />)}
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {posts.map((post) => <PostCard key={post._id} post={post} />)}
+          </div>
+        )}
       </div>
     </div>
   );
