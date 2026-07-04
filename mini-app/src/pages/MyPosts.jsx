@@ -36,7 +36,6 @@ export default function MyPosts() {
   const handleDeleteClick = (e, post) => {
     e.preventDefault();
     e.stopPropagation();
-    if (post.approvalStatus === 'approved') return;
     setPostToDelete(post);
   };
 
@@ -87,7 +86,7 @@ export default function MyPosts() {
         <div className="mt-5 space-y-3">
           {posts.map((post) => {
             const canEdit = true;
-            const canDelete = post.approvalStatus !== 'approved';
+            const canDelete = true;
             const editPath = post.type === 'buyer' ? `/buyer/edit/${post._id}` : `/seller/edit/${post._id}`;
 
             return (

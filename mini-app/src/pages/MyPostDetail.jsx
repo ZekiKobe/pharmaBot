@@ -39,7 +39,7 @@ export default function MyPostDetail() {
   }, [id, telegramId]);
 
   const canEdit = Boolean(post);
-  const canDelete = post && post.approvalStatus !== 'approved';
+  const canDelete = Boolean(post);
 
   const handleDeleteConfirm = async () => {
     if (!canDelete || deleting) return;

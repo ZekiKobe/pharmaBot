@@ -170,12 +170,6 @@ const getOwnedPost = async (postId, telegramId) => {
   return { user, post };
 };
 
-const assertPostDeletable = (post) => {
-  if (post.approvalStatus === 'approved') {
-    throw new Error('Approved posts cannot be deleted');
-  }
-};
-
 const updateMyPost = async (postId, telegramId, data) => {
   const { user, post } = await getOwnedPost(postId, telegramId);
   const shouldRefreshChannels = post.approvalStatus === 'approved' && post.isActive !== false;
@@ -272,7 +266,11 @@ const updateMyPost = async (postId, telegramId, data) => {
 
 const deleteMyPost = async (postId, telegramId) => {
   const { post } = await getOwnedPost(postId, telegramId);
-  assertPostDeletable(post);
+  const bot = getBot();
+
+  if (post.approvalStatus === 'approved' && post.publishedChannels?.length) {
+    await unpublishPostFromChannels(post, bot);
+  }
 
   await Payment.deleteMany({ postId: post._id });
   await Post.findByIdAndDelete(post._id);

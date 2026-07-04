@@ -234,9 +234,6 @@ const deleteMyPostHandler = async (req, res, next) => {
     await deleteMyPost(req.params.id, telegramId);
     res.json({ success: true, message: 'Post deleted' });
   } catch (error) {
-    if (error.message === 'Approved posts cannot be deleted') {
-      return res.status(400).json({ success: false, message: error.message });
-    }
     if (error.message === 'Post not found' || error.message === 'User not found') {
       return res.status(404).json({ success: false, message: error.message });
     }
