@@ -178,6 +178,9 @@ const getMyPostById = async (req, res, next) => {
     const { post } = await getOwnedPost(req.params.id, telegramId);
     res.json({ success: true, data: post });
   } catch (error) {
+    if (error.message === 'Published posts cannot be updated right now. Please try again later.') {
+      return res.status(503).json({ success: false, message: error.message });
+    }
     if (error.message === 'Post not found' || error.message === 'User not found') {
       return res.status(404).json({ success: false, message: error.message });
     }
@@ -198,9 +201,6 @@ const updateMyPostHandler = async (req, res, next) => {
     const post = await updateMyPost(req.params.id, telegramId, attachMedicineImage(req.body, req.file));
     res.json({ success: true, data: post, message: 'Post updated' });
   } catch (error) {
-    if (error.message === 'Approved posts cannot be changed') {
-      return res.status(400).json({ success: false, message: error.message });
-    }
     if (error.message === 'Post not found' || error.message === 'User not found') {
       return res.status(404).json({ success: false, message: error.message });
     }
@@ -234,7 +234,7 @@ const deleteMyPostHandler = async (req, res, next) => {
     await deleteMyPost(req.params.id, telegramId);
     res.json({ success: true, message: 'Post deleted' });
   } catch (error) {
-    if (error.message === 'Approved posts cannot be changed') {
+    if (error.message === 'Approved posts cannot be deleted') {
       return res.status(400).json({ success: false, message: error.message });
     }
     if (error.message === 'Post not found' || error.message === 'User not found') {

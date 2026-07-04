@@ -38,10 +38,11 @@ export default function MyPostDetail() {
     loadPost();
   }, [id, telegramId]);
 
-  const canModify = post && post.approvalStatus !== 'approved';
+  const canEdit = Boolean(post);
+  const canDelete = post && post.approvalStatus !== 'approved';
 
   const handleDeleteConfirm = async () => {
-    if (!canModify || deleting) return;
+    if (!canDelete || deleting) return;
 
     setDeleting(true);
     haptic('medium');
@@ -173,19 +174,21 @@ export default function MyPostDetail() {
 
         {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
 
-        {canModify && (
-          <div className="mt-5 grid grid-cols-2 gap-3">
+        {canEdit && (
+          <div className={`mt-5 grid gap-3 ${canDelete ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <Link to={editPath} className="btn-app-secondary py-2.5 text-xs">
               Edit
             </Link>
-            <button
-              type="button"
-              onClick={() => setShowDeleteModal(true)}
-              disabled={deleting}
-              className="rounded-xl border border-red-500/40 bg-red-500/10 py-2.5 text-xs font-semibold text-red-400"
-            >
-              Delete
-            </button>
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                disabled={deleting}
+                className="rounded-xl border border-red-500/40 bg-red-500/10 py-2.5 text-xs font-semibold text-red-400"
+              >
+                Delete
+              </button>
+            )}
           </div>
         )}
       </div>

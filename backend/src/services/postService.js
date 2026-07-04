@@ -170,15 +170,22 @@ const getOwnedPost = async (postId, telegramId) => {
   return { user, post };
 };
 
-const assertPostEditable = (post) => {
+const assertPostDeletable = (post) => {
   if (post.approvalStatus === 'approved') {
-    throw new Error('Approved posts cannot be changed');
+    throw new Error('Approved posts cannot be deleted');
   }
 };
 
 const updateMyPost = async (postId, telegramId, data) => {
   const { user, post } = await getOwnedPost(postId, telegramId);
-  assertPostEditable(post);
+  const shouldRefreshChannels = post.approvalStatus === 'approved' && post.isActive !== false;
+  const previousPublishedChannels = (post.publishedChannels || []).map((pub) => ({
+    channelId: pub.channelId,
+    channelName: pub.channelName,
+    telegramChannelId: pub.telegramChannelId,
+    messageId: pub.messageId,
+  }));
+  const previousTelegramChannelMessageId = post.telegramChannelMessageId;
 
   const fields = {
     medicineName: data.medicineName,
@@ -223,13 +230,49 @@ const updateMyPost = async (postId, telegramId, data) => {
     await user.save();
   }
 
-  await post.save();
+  const bot = shouldRefreshChannels ? getBot() : null;
+  let newPublishedChannels = null;
+
+  if (shouldRefreshChannels) {
+    if (!bot) {
+      throw new Error('Published posts cannot be updated right now. Please try again later.');
+    }
+    newPublishedChannels = await publishPostToChannels(post, bot);
+    post.publishedChannels = newPublishedChannels;
+    post.telegramChannelMessageId = newPublishedChannels[0]?.messageId || null;
+  }
+
+  try {
+    await post.save();
+  } catch (error) {
+    if (bot && newPublishedChannels?.length) {
+      await unpublishPostFromChannels(
+        { _id: post._id, publishedChannels: newPublishedChannels },
+        bot
+      ).catch((cleanupError) => {
+        logger.warn(`Failed to roll back updated channel post: ${cleanupError.message}`);
+      });
+    }
+    post.publishedChannels = previousPublishedChannels;
+    post.telegramChannelMessageId = previousTelegramChannelMessageId;
+    throw error;
+  }
+
+  if (bot && previousPublishedChannels.length) {
+    await unpublishPostFromChannels(
+      { _id: post._id, publishedChannels: previousPublishedChannels },
+      bot
+    ).catch((cleanupError) => {
+      logger.warn(`Failed to remove old channel post after update: ${cleanupError.message}`);
+    });
+  }
+
   return post;
 };
 
 const deleteMyPost = async (postId, telegramId) => {
   const { post } = await getOwnedPost(postId, telegramId);
-  assertPostEditable(post);
+  assertPostDeletable(post);
 
   await Payment.deleteMany({ postId: post._id });
   await Post.findByIdAndDelete(post._id);

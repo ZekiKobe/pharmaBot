@@ -86,7 +86,8 @@ export default function MyPosts() {
       ) : (
         <div className="mt-5 space-y-3">
           {posts.map((post) => {
-            const canModify = post.approvalStatus !== 'approved';
+            const canEdit = true;
+            const canDelete = post.approvalStatus !== 'approved';
             const editPath = post.type === 'buyer' ? `/buyer/edit/${post._id}` : `/seller/edit/${post._id}`;
 
             return (
@@ -127,23 +128,28 @@ export default function MyPosts() {
                   </p>
                 )}
 
-                {canModify && (
-                  <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
+                {canEdit && (
+                  <div
+                    className={`mt-3 grid gap-2 ${canDelete ? 'grid-cols-2' : 'grid-cols-1'}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Link
                       to={editPath}
-                      className="btn-app-secondary flex-1 py-2 text-xs"
+                      className="btn-app-secondary py-2 text-xs"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Edit
                     </Link>
-                    <button
-                      type="button"
-                      onClick={(e) => handleDeleteClick(e, post)}
-                      disabled={deletingId === post._id}
-                      className="flex-1 rounded-xl border border-red-500/40 bg-red-500/10 py-2 text-xs font-semibold text-red-400"
-                    >
-                      {deletingId === post._id ? 'Deleting...' : 'Delete'}
-                    </button>
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteClick(e, post)}
+                        disabled={deletingId === post._id}
+                        className="rounded-xl border border-red-500/40 bg-red-500/10 py-2 text-xs font-semibold text-red-400"
+                      >
+                        {deletingId === post._id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
