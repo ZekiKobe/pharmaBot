@@ -9,6 +9,29 @@ const {
   deleteMyPost,
 } = require('../services/postService');
 
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildApprovedPostsFilter = (query) => {
+  const filter = { approvalStatus: 'approved', isActive: { $ne: false } };
+
+  if (query.type) filter.type = query.type;
+  if (query.city) filter.city = new RegExp(escapeRegex(query.city), 'i');
+  if (query.category) filter.category = new RegExp(`^${escapeRegex(query.category)}$`, 'i');
+
+  const search = String(query.search || '').trim();
+  if (search) {
+    const searchRegex = new RegExp(escapeRegex(search), 'i');
+    filter.$or = [
+      { medicineName: searchRegex },
+      { brand: searchRegex },
+      { strength: searchRegex },
+      { description: searchRegex },
+    ];
+  }
+
+  return filter;
+};
+
 const toPublicPost = (post) => ({
   _id: post._id,
   type: post.type,
@@ -104,13 +127,7 @@ const getApprovedPosts = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 20;
     const skip = (page - 1) * limit;
 
-    const filter = { approvalStatus: 'approved', isActive: { $ne: false } };
-    if (req.query.type) filter.type = req.query.type;
-    if (req.query.city) filter.city = new RegExp(req.query.city, 'i');
-    if (req.query.category) filter.category = req.query.category;
-    if (req.query.search) {
-      filter.$text = { $search: req.query.search };
-    }
+    const filter = buildApprovedPostsFilter(req.query);
 
     const [posts, total] = await Promise.all([
       Post.find(filter)

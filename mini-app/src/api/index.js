@@ -20,12 +20,14 @@ function buildPostFormData(data, imageFile, { removeImage } = {}) {
 
 async function request(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
+  const { signal, ...fetchOptions } = options;
   const config = {
     headers: {},
-    ...options,
+    ...fetchOptions,
+    ...(signal ? { signal } : {}),
   };
 
-  if (!(options.body instanceof FormData)) {
+  if (!(fetchOptions.body instanceof FormData)) {
     config.headers['Content-Type'] = 'application/json';
   }
 
@@ -49,9 +51,9 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
-  getPosts: (params = {}) => {
+  getPosts: (params = {}, options = {}) => {
     const query = new URLSearchParams(params).toString();
-    return request(`/posts?${query}`);
+    return request(`/posts?${query}`, options);
   },
   getPost: (id) => request(`/posts/${id}`),
   getMyPosts: (telegramId) => request(`/posts/user/${telegramId}`),

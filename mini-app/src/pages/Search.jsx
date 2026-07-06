@@ -6,15 +6,21 @@ import { IconSearch } from '../components/Icons';
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get('search') || '');
-  const [city, setCity] = useState(searchParams.get('city') || '');
-  const [type, setType] = useState(searchParams.get('type') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || '');
+  const committedSearch = searchParams.get('search') || '';
+  const city = searchParams.get('city') || '';
+  const type = searchParams.get('type') || '';
+  const category = searchParams.get('category') || '';
+
+  const [inputQuery, setInputQuery] = useState(committedSearch);
   const [posts, setPosts] = useState([]);
   const [cities, setCities] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setInputQuery(committedSearch);
+  }, [committedSearch]);
 
   useEffect(() => {
     Promise.all([api.getCities(), api.getCategories()])
@@ -26,29 +32,36 @@ export default function Search() {
   }, []);
 
   useEffect(() => {
-    setQuery(searchParams.get('search') || '');
-    setCity(searchParams.get('city') || '');
-    setType(searchParams.get('type') || '');
-    setCategory(searchParams.get('category') || '');
-  }, [searchParams]);
-
-  useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setError('');
+
     const params = {};
-    if (query) params.search = query;
+    if (committedSearch) params.search = committedSearch;
     if (city) params.city = city;
     if (type) params.type = type;
     if (category) params.category = category;
+
     api
-      .getPosts(params)
-      .then((res) => setPosts(res.data))
-      .catch(() => {
+      .getPosts(params, { signal: controller.signal })
+      .then((res) => {
+        if (!controller.signal.aborted) {
+          setPosts(res.data);
+        }
+      })
+      .catch((err) => {
+        if (controller.signal.aborted || err.name === 'AbortError') return;
         setPosts([]);
         setError('Failed to load search results.');
       })
-      .finally(() => setLoading(false));
-  }, [query, city, type, category]);
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [committedSearch, city, type, category]);
 
   const updateSearchParams = (next) => {
     const params = new URLSearchParams(searchParams);
@@ -66,7 +79,7 @@ export default function Search() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    updateSearchParams({ search: query, city, type, category });
+    updateSearchParams({ search: inputQuery.trim() });
   };
 
   const Chip = ({ active, onClick, children }) => (
@@ -84,8 +97,8 @@ export default function Search() {
         <div className="relative min-w-0 flex-1">
           <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tg-hint" />
           <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
             placeholder="Medicine name..."
             className="app-input w-full pl-10"
           />
