@@ -4,14 +4,16 @@ import api from '../api';
 import PostCard from '../components/PostCard';
 import { IconSearch } from '../components/Icons';
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const committedSearch = searchParams.get('search') || '';
   const city = searchParams.get('city') || '';
   const type = searchParams.get('type') || '';
   const category = searchParams.get('category') || '';
 
-  const [inputQuery, setInputQuery] = useState(committedSearch);
+  const [inputQuery, setInputQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [posts, setPosts] = useState([]);
   const [cities, setCities] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -19,8 +21,12 @@ export default function Search() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setInputQuery(committedSearch);
-  }, [committedSearch]);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(inputQuery.trim());
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [inputQuery]);
 
   useEffect(() => {
     Promise.all([api.getCities(), api.getCategories()])
@@ -37,7 +43,7 @@ export default function Search() {
     setError('');
 
     const params = {};
-    if (committedSearch) params.search = committedSearch;
+    if (debouncedQuery) params.search = debouncedQuery;
     if (city) params.city = city;
     if (type) params.type = type;
     if (category) params.category = category;
@@ -61,7 +67,7 @@ export default function Search() {
       });
 
     return () => controller.abort();
-  }, [committedSearch, city, type, category]);
+  }, [debouncedQuery, city, type, category]);
 
   const updateSearchParams = (next) => {
     const params = new URLSearchParams(searchParams);
@@ -77,11 +83,6 @@ export default function Search() {
     setSearchParams(params);
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    updateSearchParams({ search: inputQuery.trim() });
-  };
-
   const Chip = ({ active, onClick, children }) => (
     <button type="button" onClick={onClick} className={`chip ${active ? 'chip-active' : ''}`}>
       {children}
@@ -93,20 +94,16 @@ export default function Search() {
       <h1 className="text-xl font-bold text-tg-text">Search</h1>
       <p className="mt-1 text-sm text-tg-hint">Find medicines across Ethiopia</p>
 
-      <form onSubmit={handleSearch} className="mt-5 flex items-stretch gap-2">
-        <div className="relative min-w-0 flex-1">
-          <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tg-hint" />
-          <input
-            value={inputQuery}
-            onChange={(e) => setInputQuery(e.target.value)}
-            placeholder="Medicine name..."
-            className="app-input w-full pl-10"
-          />
-        </div>
-        <button type="submit" className="btn-app-primary-compact">
-          Go
-        </button>
-      </form>
+      <div className="relative mt-5">
+        <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tg-hint" />
+        <input
+          value={inputQuery}
+          onChange={(e) => setInputQuery(e.target.value)}
+          placeholder="Medicine name..."
+          className="app-input w-full pl-10"
+          autoComplete="off"
+        />
+      </div>
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
         <Chip active={!type} onClick={() => updateSearchParams({ type: '' })}>All</Chip>
