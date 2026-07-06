@@ -116,7 +116,7 @@ export default function Home() {
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="section-heading !mb-0">{t('home.sellerListings')}</h2>
+          <h2 className="section-heading !mb-0">{t('home.sellerPosts')}</h2>
           <Link to="/search?type=seller" className="text-xs font-semibold text-tg-link">
             {t('home.seeAll')}
           </Link>

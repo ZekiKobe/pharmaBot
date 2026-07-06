@@ -91,7 +91,7 @@ export default function MyPosts() {
               {t('myPosts.postToBuy')}
             </Link>
             <Link to="/seller" className="btn-app-secondary py-2.5 text-xs">
-              {t('myPosts.sell')}
+              {t('myPosts.postToSell')}
             </Link>
           </div>
         </div>
