@@ -114,7 +114,7 @@ export default function MyPostDetail() {
               color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color)',
             }}
           >
-            {isBuyer ? t('myPostDetail.buyerRequest') : t('myPostDetail.forSale')}
+            {isBuyer ? t('myPostDetail.wantToBuy') : t('myPostDetail.forSale')}
           </span>
           <span className={`text-xs font-bold ${post.approvalStatus === 'approved' ? 'text-emerald-400' : post.approvalStatus === 'rejected' ? 'text-red-400' : post.approvalStatus === 'pending' ? 'text-amber-400' : 'text-tg-hint'}`}>
             {tStatus(post.approvalStatus)}

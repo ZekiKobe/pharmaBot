@@ -62,8 +62,8 @@ export default function Layout() {
         </header>
       )}
 
-      <main>
-        {inTelegram && (
+      <main className={inTelegram && !isHome ? 'pt-11' : undefined}>
+        {inTelegram && !isHome && (
           <div
             className="pointer-events-none fixed right-3 z-40"
             style={{ top: 'max(0.5rem, env(safe-area-inset-top, 0px))' }}

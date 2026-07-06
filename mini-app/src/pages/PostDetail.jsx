@@ -60,7 +60,7 @@ export default function PostDetail() {
             color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color)',
           }}
         >
-          {isBuyer ? t('postDetail.buyerRequest') : t('postDetail.forSale')}
+          {isBuyer ? t('postDetail.wantToBuy') : t('postDetail.forSale')}
         </span>
         <h1 className="mt-3 text-xl font-bold text-tg-text">
           {post.medicineName}{post.strength && <span className="text-tg-hint"> {post.strength}</span>}

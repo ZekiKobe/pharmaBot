@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import PostCard from '../components/PostCard';
-import { useLanguage } from '../context/LanguageContext';
+import LanguageToggle from '../components/LanguageToggle';
 import { IconBuy, IconSell } from '../components/Icons';
+import { useTelegram } from '../context/TelegramContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Home() {
   const { t, tCategory } = useLanguage();
+  const { webApp } = useTelegram();
   const [buyerPosts, setBuyerPosts] = useState([]);
   const [sellerPosts, setSellerPosts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -57,13 +60,14 @@ export default function Home() {
             <h2 className="text-xl font-bold text-white">{t('home.heroTitle')}</h2>
             <p className="mt-1.5 text-sm text-white/80">{t('home.heroSubtitle')}</p>
           </div>
+          {webApp && <LanguageToggle variant="onDark" />}
         </div>
         <div className="relative mt-5 grid grid-cols-2 gap-3">
           <Link
             to="/buyer"
             className="flex items-center justify-center gap-2 rounded-xl bg-white/20 px-4 py-3.5 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
           >
-            <IconBuy className="h-4 w-4" /> {t('home.request')}
+            <IconBuy className="h-4 w-4" /> {t('home.postToBuy')}
           </Link>
           <Link
             to="/seller"
@@ -96,7 +100,7 @@ export default function Home() {
 
       <section className="mb-6">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="section-heading !mb-0">{t('home.buyerRequests')}</h2>
+          <h2 className="section-heading !mb-0">{t('home.buyerPosts')}</h2>
           <Link to="/search?type=buyer" className="text-xs font-semibold text-tg-link">
             {t('home.seeAll')}
           </Link>

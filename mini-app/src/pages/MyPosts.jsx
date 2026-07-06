@@ -88,7 +88,7 @@ export default function MyPosts() {
           <p className="text-sm text-tg-hint">{t('myPosts.noPosts')}</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Link to="/buyer" className="btn-app-primary py-2.5 text-xs">
-              {t('myPosts.request')}
+              {t('myPosts.postToBuy')}
             </Link>
             <Link to="/seller" className="btn-app-secondary py-2.5 text-xs">
               {t('myPosts.sell')}

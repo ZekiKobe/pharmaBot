@@ -62,7 +62,7 @@ export default function PostCard({ post }) {
             color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color, #2dd4bf)',
           }}
         >
-          {isBuyer ? t('postCard.buyerRequest') : t('postCard.forSale')}
+          {isBuyer ? t('postCard.wantToBuy') : t('postCard.forSale')}
         </span>
         <h3
           className="mt-2 text-sm font-bold leading-5 text-tg-text"
