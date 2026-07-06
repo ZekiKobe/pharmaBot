@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../api';
 import PostCard from '../components/PostCard';
+import { useLanguage } from '../context/LanguageContext';
 import { IconSearch } from '../components/Icons';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
 export default function Search() {
+  const { t, tCategory } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const city = searchParams.get('city') || '';
   const type = searchParams.get('type') || '';
@@ -34,8 +36,8 @@ export default function Search() {
         setCities(c.data);
         setCategories(cats.data);
       })
-      .catch(() => setError('Failed to load search filters.'));
-  }, []);
+      .catch(() => setError(t('search.filterError')));
+  }, [t]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -58,7 +60,7 @@ export default function Search() {
       .catch((err) => {
         if (controller.signal.aborted || err.name === 'AbortError') return;
         setPosts([]);
-        setError('Failed to load search results.');
+        setError(t('search.resultsError'));
       })
       .finally(() => {
         if (!controller.signal.aborted) {
@@ -67,7 +69,7 @@ export default function Search() {
       });
 
     return () => controller.abort();
-  }, [debouncedQuery, city, type, category]);
+  }, [debouncedQuery, city, type, category, t]);
 
   const updateSearchParams = (next) => {
     const params = new URLSearchParams(searchParams);
@@ -91,38 +93,44 @@ export default function Search() {
 
   return (
     <div className="app-container">
-      <h1 className="text-xl font-bold text-tg-text">Search</h1>
-      <p className="mt-1 text-sm text-tg-hint">Find medicines across Ethiopia</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-tg-text">{t('search.title')}</h1>
+          <p className="mt-1 text-sm text-tg-hint">{t('search.subtitle')}</p>
+        </div>
+      </div>
 
       <div className="relative mt-5">
         <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tg-hint" />
         <input
           value={inputQuery}
           onChange={(e) => setInputQuery(e.target.value)}
-          placeholder="Medicine name..."
+          placeholder={t('search.placeholder')}
           className="app-input w-full pl-10"
           autoComplete="off"
         />
       </div>
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-        <Chip active={!type} onClick={() => updateSearchParams({ type: '' })}>All</Chip>
-        <Chip active={type === 'buyer'} onClick={() => updateSearchParams({ type: 'buyer' })}>Buyer</Chip>
-        <Chip active={type === 'seller'} onClick={() => updateSearchParams({ type: 'seller' })}>Seller</Chip>
+        <Chip active={!type} onClick={() => updateSearchParams({ type: '' })}>{t('search.all')}</Chip>
+        <Chip active={type === 'buyer'} onClick={() => updateSearchParams({ type: 'buyer' })}>{t('search.buyer')}</Chip>
+        <Chip active={type === 'seller'} onClick={() => updateSearchParams({ type: 'seller' })}>{t('search.seller')}</Chip>
       </div>
 
       {cities.length > 0 && (
         <select value={city} onChange={(e) => updateSearchParams({ city: e.target.value })} className="app-input mt-3">
-          <option value="">All cities</option>
+          <option value="">{t('search.allCities')}</option>
           {cities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       )}
 
       {categories.length > 0 && (
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          <Chip active={!category} onClick={() => updateSearchParams({ category: '' })}>All categories</Chip>
+          <Chip active={!category} onClick={() => updateSearchParams({ category: '' })}>{t('search.allCategories')}</Chip>
           {categories.map((cat) => (
-            <Chip key={cat._id} active={category === cat.slug} onClick={() => updateSearchParams({ category: cat.slug })}>{cat.name}</Chip>
+            <Chip key={cat._id} active={category === cat.slug} onClick={() => updateSearchParams({ category: cat.slug })}>
+              {tCategory(cat.slug) || cat.name}
+            </Chip>
           ))}
         </div>
       )}
@@ -137,7 +145,7 @@ export default function Search() {
         {loading ? (
           <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-200 border-t-teal-600" /></div>
         ) : posts.length === 0 ? (
-          <div className="app-card empty-state">No results found</div>
+          <div className="app-card empty-state">{t('search.noResults')}</div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {posts.map((post) => <PostCard key={post._id} post={post} />)}

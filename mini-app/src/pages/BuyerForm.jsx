@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
+import { useLanguage } from '../context/LanguageContext';
 import { IconArrowLeft } from '../components/Icons';
 import FieldError, { ErrorSummary } from '../components/FieldError';
 import MedicineImageUpload from '../components/MedicineImageUpload';
@@ -14,6 +15,7 @@ export default function BuyerForm() {
   const { postId } = useParams();
   const isEdit = Boolean(postId);
   const { user, telegramId, haptic } = useTelegram();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [loadingPost, setLoadingPost] = useState(isEdit);
   const submittedRef = useRef(false);
@@ -73,8 +75,9 @@ export default function BuyerForm() {
     haptic('medium');
 
     if (!telegramId) {
-      setError('Telegram user ID is missing. Open this app from Telegram.');
-      setFieldErrors({ telegramId: 'Telegram user ID is missing. Open this app from Telegram.' });
+      const msg = t('common.telegramIdMissing');
+      setError(msg);
+      setFieldErrors({ telegramId: msg });
       setLoading(false);
       return;
     }
@@ -97,7 +100,7 @@ export default function BuyerForm() {
 
       const newPostId = res?.data?._id;
       if (!newPostId) {
-        throw new Error('Post created but ID was missing. Check My Posts.');
+        throw new Error(t('buyerForm.postIdMissing'));
       }
 
       submittedRef.current = true;
@@ -105,7 +108,7 @@ export default function BuyerForm() {
       navigate(`/payment/${newPostId}`);
     } catch (err) {
       haptic('error');
-      setError(err.message || 'Something went wrong');
+      setError(err.message || t('buyerForm.somethingWrong'));
       setFieldErrors(err.fieldErrors || {});
     } finally {
       setLoading(false);
@@ -123,50 +126,50 @@ export default function BuyerForm() {
   return (
     <div className="app-container">
       <button onClick={() => navigate(isEdit ? `/my-posts/${postId}` : -1)} className="mb-4 flex items-center gap-1 text-sm font-medium text-tg-hint">
-        <IconArrowLeft className="h-4 w-4" /> Back
+        <IconArrowLeft className="h-4 w-4" /> {t('common.back')}
       </button>
-      <h1 className="text-xl font-bold text-tg-text">{isEdit ? 'Edit Buyer Request' : 'Buyer Request'}</h1>
+      <h1 className="text-xl font-bold text-tg-text">{isEdit ? t('buyerForm.editTitle') : t('buyerForm.title')}</h1>
       <p className="mt-1 text-sm text-tg-hint">
-        {isEdit ? 'Update your medicine request' : 'Post your medicine need for ETB 20'}
+        {isEdit ? t('buyerForm.editSubtitle') : t('buyerForm.subtitle')}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
-          <label className="app-label">Medicine Name *</label>
-          <input name="medicineName" value={form.medicineName} onChange={set} className={fieldClass(fieldErrors, 'medicineName')} placeholder="e.g. Paracetamol" />
+          <label className="app-label">{t('buyerForm.medicineName')} *</label>
+          <input name="medicineName" value={form.medicineName} onChange={set} className={fieldClass(fieldErrors, 'medicineName')} placeholder={t('buyerForm.placeholderMedicine')} />
           <FieldError message={getFieldError(fieldErrors, 'medicineName')} />
         </div>
         <div>
-          <label className="app-label">Strength</label>
-          <input name="strength" value={form.strength} onChange={set} className={fieldClass(fieldErrors, 'strength')} placeholder="e.g. 500mg" />
+          <label className="app-label">{t('buyerForm.strength')}</label>
+          <input name="strength" value={form.strength} onChange={set} className={fieldClass(fieldErrors, 'strength')} placeholder={t('buyerForm.placeholderStrength')} />
           <FieldError message={getFieldError(fieldErrors, 'strength')} />
         </div>
         <div>
-          <label className="app-label">Quantity *</label>
-          <input name="quantity" value={form.quantity} onChange={set} className={fieldClass(fieldErrors, 'quantity')} placeholder="e.g. 50 Boxes" />
+          <label className="app-label">{t('buyerForm.quantity')} *</label>
+          <input name="quantity" value={form.quantity} onChange={set} className={fieldClass(fieldErrors, 'quantity')} placeholder={t('buyerForm.placeholderQuantity')} />
           <FieldError message={getFieldError(fieldErrors, 'quantity')} />
         </div>
         <div>
-          <label className="app-label">City *</label>
+          <label className="app-label">{t('buyerForm.city')} *</label>
           <select name="city" value={form.city} onChange={set} className={fieldClass(fieldErrors, 'city')}>
-            <option value="">Select city</option>
+            <option value="">{t('buyerForm.selectCity')}</option>
             {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <FieldError message={getFieldError(fieldErrors, 'city')} />
         </div>
         <div>
-          <label className="app-label">Description</label>
-          <textarea name="description" value={form.description} onChange={set} className={`${fieldClass(fieldErrors, 'description')} min-h-24 resize-none`} placeholder="Additional details..." />
+          <label className="app-label">{t('buyerForm.description')}</label>
+          <textarea name="description" value={form.description} onChange={set} className={`${fieldClass(fieldErrors, 'description')} min-h-24 resize-none`} placeholder={t('buyerForm.placeholderDescription')} />
           <FieldError message={getFieldError(fieldErrors, 'description')} />
         </div>
 
         <MedicineImageUpload
-          hint="Optional. Add a medicine photo or doctor's prescription."
+          hint={t('buyerForm.imageHint')}
           preview={imagePreview}
           existingUrl={!removeImage ? existingImageUrl : ''}
           onSelect={(file) => {
             if (file.size > 5 * 1024 * 1024) {
-              setError('Image must be 5MB or smaller');
+              setError(t('buyerForm.imageTooLarge'));
               return;
             }
             setImageFile(file);
@@ -183,13 +186,13 @@ export default function BuyerForm() {
         />
 
         <div>
-          <label className="app-label">Phone *</label>
-          <input name="contactPhone" value={form.contactPhone} onChange={set} type="tel" className={fieldClass(fieldErrors, 'contactPhone')} placeholder="0911234567" />
+          <label className="app-label">{t('buyerForm.phone')} *</label>
+          <input name="contactPhone" value={form.contactPhone} onChange={set} type="tel" className={fieldClass(fieldErrors, 'contactPhone')} placeholder={t('buyerForm.placeholderPhone')} />
           <FieldError message={getFieldError(fieldErrors, 'contactPhone')} />
         </div>
         <div>
-          <label className="app-label">Telegram Username</label>
-          <input name="telegramUsername" value={form.telegramUsername} onChange={set} className={fieldClass(fieldErrors, 'telegramUsername')} placeholder="@username" />
+          <label className="app-label">{t('buyerForm.telegramUsername')}</label>
+          <input name="telegramUsername" value={form.telegramUsername} onChange={set} className={fieldClass(fieldErrors, 'telegramUsername')} placeholder={t('buyerForm.placeholderUsername')} />
           <FieldError message={getFieldError(fieldErrors, 'telegramUsername')} />
         </div>
 
@@ -198,7 +201,7 @@ export default function BuyerForm() {
         )}
 
         <button type="submit" disabled={loading} className="btn-app-primary">
-          {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Continue to Payment'}
+          {loading ? t('buyerForm.saving') : isEdit ? t('buyerForm.saveChanges') : t('buyerForm.continuePayment')}
         </button>
       </form>
     </div>

@@ -1,16 +1,20 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ConfirmModal({
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   variant = 'danger',
   loading = false,
+  loadingLabel,
   onConfirm,
   onClose,
 }) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -60,10 +64,10 @@ export default function ConfirmModal({
 
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button type="button" onClick={onClose} disabled={loading} className="btn-app-secondary py-3 text-sm">
-            {cancelLabel}
+            {cancelLabel || t('common.cancel')}
           </button>
           <button type="button" onClick={onConfirm} disabled={loading} className={confirmClass}>
-            {loading ? 'Deleting...' : confirmLabel}
+            {loading ? (loadingLabel || t('myPosts.deleting')) : (confirmLabel || t('common.confirm'))}
           </button>
         </div>
       </div>

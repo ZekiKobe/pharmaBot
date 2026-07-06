@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
+import { useLanguage } from '../context/LanguageContext';
 import ConfirmModal from '../components/ConfirmModal';
 
 const statusStyle = {
@@ -14,6 +15,7 @@ const statusStyle = {
 export default function MyPosts() {
   const navigate = useNavigate();
   const { telegramId, haptic } = useTelegram();
+  const { t, tStatus } = useLanguage();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
@@ -29,14 +31,14 @@ export default function MyPosts() {
       .then((res) => setPosts(res.data))
       .catch(() => {
         setPosts([]);
-        setError('Failed to load your posts.');
+        setError(t('myPosts.loadError'));
       })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     loadPosts();
-  }, [telegramId]);
+  }, [telegramId, t]);
 
   const handleDeleteClick = (e, post) => {
     e.preventDefault();
@@ -56,7 +58,7 @@ export default function MyPosts() {
       loadPosts();
     } catch {
       haptic('error');
-      setError('Failed to delete the post. Please try again.');
+      setError(t('myPosts.deleteError'));
     } finally {
       setDeletingId(null);
     }
@@ -72,8 +74,8 @@ export default function MyPosts() {
 
   return (
     <div className="app-container">
-      <h1 className="text-xl font-bold text-tg-text">My Posts</h1>
-      <p className="mt-1 text-sm text-tg-hint">Tap a post to view details</p>
+      <h1 className="text-xl font-bold text-tg-text">{t('myPosts.title')}</h1>
+      <p className="mt-1 text-sm text-tg-hint">{t('myPosts.subtitle')}</p>
 
       {error && (
         <div className="app-card mt-4 text-sm text-red-500">
@@ -83,13 +85,13 @@ export default function MyPosts() {
 
       {posts.length === 0 ? (
         <div className="app-card mt-6 py-10 text-center">
-          <p className="text-sm text-tg-hint">No posts yet</p>
+          <p className="text-sm text-tg-hint">{t('myPosts.noPosts')}</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Link to="/buyer" className="btn-app-primary py-2.5 text-xs">
-              Request
+              {t('myPosts.request')}
             </Link>
             <Link to="/seller" className="btn-app-secondary py-2.5 text-xs">
-              Sell
+              {t('myPosts.sell')}
             </Link>
           </div>
         </div>
@@ -120,12 +122,12 @@ export default function MyPosts() {
                       color: post.type === 'buyer' ? '#38bdf8' : 'var(--tg-theme-link-color)',
                     }}
                   >
-                    {post.type === 'buyer' ? 'Buyer' : 'Seller'}
+                    {post.type === 'buyer' ? t('status.buyer') : t('status.seller')}
                   </span>
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize ${statusStyle[post.approvalStatus]}`}
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${statusStyle[post.approvalStatus]}`}
                   >
-                    {post.approvalStatus}
+                    {tStatus(post.approvalStatus)}
                   </span>
                 </div>
                 <h3 className="mt-2 font-bold text-tg-text">{post.medicineName}</h3>
@@ -148,7 +150,7 @@ export default function MyPosts() {
                       className="btn-app-secondary py-2 text-xs"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      Edit
+                      {t('myPosts.edit')}
                     </Link>
                     {canDelete && (
                       <button
@@ -157,7 +159,7 @@ export default function MyPosts() {
                         disabled={deletingId === post._id}
                         className="rounded-xl border border-red-500/40 bg-red-500/10 py-2 text-xs font-semibold text-red-400"
                       >
-                        {deletingId === post._id ? 'Deleting...' : 'Delete'}
+                        {deletingId === post._id ? t('myPosts.deleting') : t('myPosts.delete')}
                       </button>
                     )}
                   </div>
@@ -170,10 +172,11 @@ export default function MyPosts() {
 
       {postToDelete && (
         <ConfirmModal
-          title="Delete post?"
-          message={`"${postToDelete.medicineName}" will be permanently removed. This cannot be undone.`}
-          confirmLabel="Delete"
+          title={t('myPosts.deleteTitle')}
+          message={t('myPosts.deleteMessage', { name: postToDelete.medicineName })}
+          confirmLabel={t('myPosts.delete')}
           loading={deletingId === postToDelete._id}
+          loadingLabel={t('myPosts.deleting')}
           onConfirm={handleDeleteConfirm}
           onClose={() => !deletingId && setPostToDelete(null)}
         />

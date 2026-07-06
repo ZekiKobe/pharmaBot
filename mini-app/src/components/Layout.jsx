@@ -1,20 +1,23 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTelegram } from '../context/TelegramContext';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageToggle from './LanguageToggle';
 import { IconHome, IconSearch, IconBuy, IconSell, IconList, IconPill } from './Icons';
-
-const navItems = [
-  { to: '/', label: 'Home', icon: IconHome, end: true },
-  { to: '/search', label: 'Search', icon: IconSearch },
-  { to: '/buyer', label: 'Buy', icon: IconBuy },
-  { to: '/seller', label: 'Sell', icon: IconSell },
-  { to: '/my-posts', label: 'My Posts', icon: IconList },
-];
 
 export default function Layout() {
   const location = useLocation();
   const { webApp, ready } = useTelegram();
+  const { t } = useLanguage();
   const isHome = location.pathname === '/';
   const inTelegram = Boolean(webApp);
+
+  const navItems = [
+    { to: '/', label: t('nav.home'), icon: IconHome, end: true },
+    { to: '/search', label: t('nav.search'), icon: IconSearch },
+    { to: '/buyer', label: t('nav.buy'), icon: IconBuy },
+    { to: '/seller', label: t('nav.sell'), icon: IconSell },
+    { to: '/my-posts', label: t('nav.myPosts'), icon: IconList },
+  ];
 
   if (!ready) {
     return (
@@ -26,8 +29,8 @@ export default function Layout() {
             borderTopColor: 'var(--tg-theme-button-color, #0d9488)',
           }}
         />
-        <h1 className="mt-5 text-lg font-bold">Getting Things Ready...</h1>
-        <p className="mt-1.5 text-sm text-tg-hint">Loading your marketplace experience</p>
+        <h1 className="mt-5 text-lg font-bold">{t('layout.loadingTitle')}</h1>
+        <p className="mt-1.5 text-sm text-tg-hint">{t('layout.loadingSubtitle')}</p>
       </div>
     );
   }
@@ -41,22 +44,35 @@ export default function Layout() {
           }`}
           style={{ borderColor: 'color-mix(in srgb, var(--tg-theme-hint-color) 20%, transparent)' }}
         >
-          <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3">
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-md"
-              style={{ backgroundColor: 'var(--tg-theme-button-color, #0d9488)' }}
-            >
-              <IconPill className="h-4 w-4" />
+          <div className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-md"
+                style={{ backgroundColor: 'var(--tg-theme-button-color, #0d9488)' }}
+              >
+                <IconPill className="h-4 w-4" />
+              </div>
+              <div>
+                <h1 className="text-sm font-bold text-tg-text">PharmaBot</h1>
+                <p className="text-[11px] text-tg-hint">{t('layout.tagline')}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-sm font-bold text-tg-text">PharmaBot</h1>
-              <p className="text-[11px] text-tg-hint">Ethiopian Pharma Marketplace</p>
-            </div>
+            <LanguageToggle />
           </div>
         </header>
       )}
 
       <main>
+        {inTelegram && (
+          <div
+            className="pointer-events-none fixed right-3 z-40"
+            style={{ top: 'max(0.5rem, env(safe-area-inset-top, 0px))' }}
+          >
+            <div className="pointer-events-auto">
+              <LanguageToggle />
+            </div>
+          </div>
+        )}
         <Outlet />
       </main>
 

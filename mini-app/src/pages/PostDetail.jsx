@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api';
+import { useLanguage } from '../context/LanguageContext';
 import { IconArrowLeft, IconMapPin } from '../components/Icons';
 import ContactSection from '../components/ContactSection';
-import { formatCategoryLabel } from '../utils/category';
 
 export default function PostDetail() {
   const { id } = useParams();
+  const { t, tCategory } = useLanguage();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,8 +23,8 @@ export default function PostDetail() {
   if (error || !post) {
     return (
       <div className="app-container text-center">
-        <p className="text-red-500">{error || 'Not found'}</p>
-        <Link to="/" className="mt-4 inline-block text-sm font-semibold text-teal-600">Back home</Link>
+        <p className="text-red-500">{error || t('postDetail.notFound')}</p>
+        <Link to="/" className="mt-4 inline-block text-sm font-semibold text-teal-600">{t('postDetail.backHome')}</Link>
       </div>
     );
   }
@@ -33,7 +34,7 @@ export default function PostDetail() {
   return (
     <div className="app-container">
       <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-tg-hint">
-        <IconArrowLeft className="h-4 w-4" /> Back
+        <IconArrowLeft className="h-4 w-4" /> {t('postDetail.back')}
       </Link>
 
       <div className="app-card">
@@ -42,7 +43,7 @@ export default function PostDetail() {
             className="mb-4 rounded-xl p-3"
             style={{ backgroundColor: 'color-mix(in srgb, var(--tg-theme-hint-color) 10%, var(--tg-theme-secondary-bg-color))' }}
           >
-            <p className="text-[10px] font-bold uppercase text-tg-hint">Photo</p>
+            <p className="text-[10px] font-bold uppercase text-tg-hint">{t('postDetail.photo')}</p>
             <img
               src={api.getUploadUrl(post.medicineImage)}
               alt="Medicine"
@@ -59,18 +60,18 @@ export default function PostDetail() {
             color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color)',
           }}
         >
-          {isBuyer ? 'Buyer Request' : 'For Sale'}
+          {isBuyer ? t('postDetail.buyerRequest') : t('postDetail.forSale')}
         </span>
         <h1 className="mt-3 text-xl font-bold text-tg-text">
           {post.medicineName}{post.strength && <span className="text-tg-hint"> {post.strength}</span>}
         </h1>
 
         <div className="mt-5 space-y-3">
-          {post.brand && <Row label="Brand" value={post.brand} />}
-          {!isBuyer && post.category && <Row label="Category" value={formatCategoryLabel(post.category)} />}
-          <Row label="Quantity" value={post.quantity} />
-          {!isBuyer && post.price && <Row label="Price" value={`ETB ${post.price}`} highlight />}
-          {!isBuyer && post.expiryDate && <Row label="Expiry" value={new Date(post.expiryDate).toLocaleDateString()} />}
+          {post.brand && <Row label={t('postDetail.brand')} value={post.brand} />}
+          {!isBuyer && post.category && <Row label={t('postDetail.category')} value={tCategory(post.category)} />}
+          <Row label={t('postDetail.quantity')} value={post.quantity} />
+          {!isBuyer && post.price && <Row label={t('postDetail.price')} value={`ETB ${post.price}`} highlight />}
+          {!isBuyer && post.expiryDate && <Row label={t('postDetail.expiry')} value={new Date(post.expiryDate).toLocaleDateString()} />}
           <div className="flex items-center gap-2 text-sm">
             <IconMapPin className="h-4 w-4 text-tg-link" />
             <span className="font-semibold text-tg-text">{post.city}</span>

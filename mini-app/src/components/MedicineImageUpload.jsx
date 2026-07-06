@@ -1,22 +1,24 @@
 import { useRef } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import FieldError from './FieldError';
 
 export default function MedicineImageUpload({
-  label = 'Medicine or prescription photo',
-  hint = 'Optional. Upload a medicine photo or doctor prescription.',
+  label,
+  hint,
   preview,
   existingUrl,
   onSelect,
   onClear,
   error,
 }) {
+  const { t } = useLanguage();
   const inputRef = useRef(null);
   const showPreview = preview || existingUrl;
 
   return (
     <div>
-      <label className="app-label">{label}</label>
-      <p className="mb-2 text-xs text-tg-hint">{hint}</p>
+      <label className="app-label">{label || t('imageUpload.label')}</label>
+      <p className="mb-2 text-xs text-tg-hint">{hint || t('imageUpload.defaultHint')}</p>
       <div
         className={`app-card flex cursor-pointer flex-col items-center border-2 border-dashed p-5 transition-colors ${
           error ? 'border-red-400' : 'border-tg-hint/40'
@@ -49,7 +51,7 @@ export default function MedicineImageUpload({
               }}
               className="btn-app-secondary mt-3 w-full py-2 text-xs"
             >
-              Remove image
+              {t('imageUpload.remove')}
             </button>
           </div>
         ) : (
@@ -71,8 +73,8 @@ export default function MedicineImageUpload({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
               </svg>
             </div>
-            <p className="text-sm font-semibold text-tg-text">Tap to add photo</p>
-            <p className="mt-1 text-xs text-tg-hint">JPG, PNG or WEBP up to 5MB</p>
+            <p className="text-sm font-semibold text-tg-text">{t('imageUpload.tapToAdd')}</p>
+            <p className="mt-1 text-xs text-tg-hint">{t('imageUpload.fileTypes')}</p>
           </>
         )}
       </div>

@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
+import { useLanguage } from '../context/LanguageContext';
 import { IconArrowLeft } from '../components/Icons';
 import FieldError, { ErrorSummary } from '../components/FieldError';
 import MedicineImageUpload from '../components/MedicineImageUpload';
@@ -14,6 +15,7 @@ export default function SellerForm() {
   const { postId } = useParams();
   const isEdit = Boolean(postId);
   const { user, telegramId, haptic } = useTelegram();
+  const { t, tCategory } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [loadingPost, setLoadingPost] = useState(isEdit);
   const submittedRef = useRef(false);
@@ -45,8 +47,8 @@ export default function SellerForm() {
     api
       .getCategories()
       .then((res) => setCategories(res.data || []))
-      .catch(() => setError('Failed to load categories. Please try again.'));
-  }, []);
+      .catch(() => setError(t('sellerForm.categoriesError')));
+  }, [t]);
 
   useEffect(() => {
     if (!isEdit || !telegramId) return;
@@ -85,8 +87,9 @@ export default function SellerForm() {
     haptic('medium');
 
     if (!telegramId) {
-      setError('Telegram user ID is missing. Open this app from Telegram.');
-      setFieldErrors({ telegramId: 'Telegram user ID is missing. Open this app from Telegram.' });
+      const msg = t('common.telegramIdMissing');
+      setError(msg);
+      setFieldErrors({ telegramId: msg });
       setLoading(false);
       return;
     }
@@ -110,7 +113,7 @@ export default function SellerForm() {
 
       const newPostId = res?.data?._id;
       if (!newPostId) {
-        throw new Error('Listing created but ID was missing. Check My Posts.');
+        throw new Error(t('sellerForm.postIdMissing'));
       }
 
       submittedRef.current = true;
@@ -118,7 +121,7 @@ export default function SellerForm() {
       navigate(`/payment/${newPostId}`);
     } catch (err) {
       haptic('error');
-      setError(err.message || 'Something went wrong');
+      setError(err.message || t('buyerForm.somethingWrong'));
       setFieldErrors(err.fieldErrors || {});
     } finally {
       setLoading(false);
@@ -136,32 +139,32 @@ export default function SellerForm() {
   return (
     <div className="app-container">
       <button onClick={() => navigate(isEdit ? `/my-posts/${postId}` : -1)} className="mb-4 flex items-center gap-1 text-sm font-medium text-tg-hint">
-        <IconArrowLeft className="h-4 w-4" /> Back
+        <IconArrowLeft className="h-4 w-4" /> {t('common.back')}
       </button>
-      <h1 className="text-xl font-bold text-tg-text">{isEdit ? 'Edit Seller Listing' : 'Seller Listing'}</h1>
+      <h1 className="text-xl font-bold text-tg-text">{isEdit ? t('sellerForm.editTitle') : t('sellerForm.title')}</h1>
       <p className="mt-1 text-sm text-tg-hint">
-        {isEdit ? 'Update your listing' : 'List your medicine for ETB 20'}
+        {isEdit ? t('sellerForm.editSubtitle') : t('sellerForm.subtitle')}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
-          <label className="app-label">Medicine Name *</label>
+          <label className="app-label">{t('buyerForm.medicineName')} *</label>
           <input
             name="medicineName"
             value={form.medicineName}
             onChange={set}
             className={fieldClass(fieldErrors, 'medicineName')}
-            placeholder="e.g. Paracetamol"
+            placeholder={t('buyerForm.placeholderMedicine')}
           />
           <FieldError message={getFieldError(fieldErrors, 'medicineName')} />
         </div>
         <div>
-          <label className="app-label">Category *</label>
+          <label className="app-label">{t('sellerForm.category')} *</label>
           <select name="category" value={form.category} onChange={set} className={fieldClass(fieldErrors, 'category')}>
-            <option value="">Select category</option>
+            <option value="">{t('sellerForm.selectCategory')}</option>
             {categories.map((cat) => (
               <option key={cat._id} value={cat.slug}>
-                {cat.name}
+                {tCategory(cat.slug) || cat.name}
               </option>
             ))}
           </select>
@@ -169,42 +172,42 @@ export default function SellerForm() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="app-label">Brand *</label>
+            <label className="app-label">{t('sellerForm.brand')} *</label>
             <input
               name="brand"
               value={form.brand}
               onChange={set}
               className={fieldClass(fieldErrors, 'brand')}
-              placeholder="e.g. GSK"
+              placeholder={t('sellerForm.placeholderBrand')}
             />
             <FieldError message={getFieldError(fieldErrors, 'brand')} />
           </div>
           <div>
-            <label className="app-label">Strength *</label>
+            <label className="app-label">{t('buyerForm.strength')} *</label>
             <input
               name="strength"
               value={form.strength}
               onChange={set}
               className={fieldClass(fieldErrors, 'strength')}
-              placeholder="e.g. 500mg"
+              placeholder={t('buyerForm.placeholderStrength')}
             />
             <FieldError message={getFieldError(fieldErrors, 'strength')} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="app-label">Quantity *</label>
+            <label className="app-label">{t('buyerForm.quantity')} *</label>
             <input
               name="quantity"
               value={form.quantity}
               onChange={set}
               className={fieldClass(fieldErrors, 'quantity')}
-              placeholder="e.g. 50 Boxes"
+              placeholder={t('buyerForm.placeholderQuantity')}
             />
             <FieldError message={getFieldError(fieldErrors, 'quantity')} />
           </div>
           <div>
-            <label className="app-label">Price (ETB) *</label>
+            <label className="app-label">{t('sellerForm.price')} *</label>
             <input
               name="price"
               type="number"
@@ -213,43 +216,43 @@ export default function SellerForm() {
               min="1"
               step="0.01"
               className={fieldClass(fieldErrors, 'price')}
-              placeholder="e.g. 250"
+              placeholder={t('sellerForm.placeholderPrice')}
             />
             <FieldError message={getFieldError(fieldErrors, 'price')} />
           </div>
         </div>
         <div>
-          <label className="app-label">Expiry Date *</label>
+          <label className="app-label">{t('sellerForm.expiryDate')} *</label>
           <input name="expiryDate" type="date" value={form.expiryDate} onChange={set} className={fieldClass(fieldErrors, 'expiryDate')} />
           <FieldError message={getFieldError(fieldErrors, 'expiryDate')} />
         </div>
         <div>
-          <label className="app-label">City *</label>
+          <label className="app-label">{t('buyerForm.city')} *</label>
           <select name="city" value={form.city} onChange={set} className={fieldClass(fieldErrors, 'city')}>
-            <option value="">Select city</option>
+            <option value="">{t('buyerForm.selectCity')}</option>
             {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <FieldError message={getFieldError(fieldErrors, 'city')} />
         </div>
         <div>
-          <label className="app-label">Description</label>
+          <label className="app-label">{t('buyerForm.description')}</label>
           <textarea
             name="description"
             value={form.description}
             onChange={set}
             className={`${fieldClass(fieldErrors, 'description')} min-h-24 resize-none`}
-            placeholder="Additional details..."
+            placeholder={t('buyerForm.placeholderDescription')}
           />
           <FieldError message={getFieldError(fieldErrors, 'description')} />
         </div>
 
         <MedicineImageUpload
-          hint="Optional. Add a photo of the medicine or packaging."
+          hint={t('sellerForm.imageHint')}
           preview={imagePreview}
           existingUrl={!removeImage ? existingImageUrl : ''}
           onSelect={(file) => {
             if (file.size > 5 * 1024 * 1024) {
-              setError('Image must be 5MB or smaller');
+              setError(t('buyerForm.imageTooLarge'));
               return;
             }
             setImageFile(file);
@@ -266,18 +269,18 @@ export default function SellerForm() {
         />
 
         <div>
-          <label className="app-label">Phone *</label>
-          <input name="contactPhone" value={form.contactPhone} onChange={set} type="tel" className={fieldClass(fieldErrors, 'contactPhone')} placeholder="0911234567" />
+          <label className="app-label">{t('buyerForm.phone')} *</label>
+          <input name="contactPhone" value={form.contactPhone} onChange={set} type="tel" className={fieldClass(fieldErrors, 'contactPhone')} placeholder={t('buyerForm.placeholderPhone')} />
           <FieldError message={getFieldError(fieldErrors, 'contactPhone')} />
         </div>
         <div>
-          <label className="app-label">Telegram Username</label>
+          <label className="app-label">{t('buyerForm.telegramUsername')}</label>
           <input
             name="telegramUsername"
             value={form.telegramUsername}
             onChange={set}
             className={fieldClass(fieldErrors, 'telegramUsername')}
-            placeholder="@username"
+            placeholder={t('buyerForm.placeholderUsername')}
           />
           <FieldError message={getFieldError(fieldErrors, 'telegramUsername')} />
         </div>
@@ -287,7 +290,7 @@ export default function SellerForm() {
         )}
 
         <button type="submit" disabled={loading} className="btn-app-primary">
-          {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Continue to Payment'}
+          {loading ? t('buyerForm.saving') : isEdit ? t('buyerForm.saveChanges') : t('buyerForm.continuePayment')}
         </button>
       </form>
     </div>

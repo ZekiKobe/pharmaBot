@@ -1,8 +1,10 @@
 import { useTelegram } from '../context/TelegramContext';
+import { useLanguage } from '../context/LanguageContext';
 import { IconPhone, IconTelegram } from './Icons';
 
 export default function ContactSection({ telegramUsername, contactPhone }) {
   const { webApp } = useTelegram();
+  const { t } = useLanguage();
   const cleanUsername = telegramUsername?.replace(/^@/, '');
   const phoneValue = String(contactPhone || '').trim();
   const phoneHref = `tel:${phoneValue.replace(/[^+\d]/g, '')}`;
@@ -25,7 +27,7 @@ export default function ContactSection({ telegramUsername, contactPhone }) {
           'color-mix(in srgb, var(--tg-theme-button-color) 12%, var(--tg-theme-secondary-bg-color))',
       }}
     >
-      <p className="text-[10px] font-bold uppercase text-tg-link">Contact</p>
+      <p className="text-[10px] font-bold uppercase text-tg-link">{t('contact.title')}</p>
       <div className="mt-3 space-y-2">
         {cleanUsername && (
           <a
@@ -47,7 +49,7 @@ export default function ContactSection({ telegramUsername, contactPhone }) {
               <IconTelegram className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-tg-hint">Telegram</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-tg-hint">{t('contact.telegram')}</p>
               <p className="truncate text-sm font-semibold text-tg-link">@{cleanUsername}</p>
             </div>
           </a>
@@ -70,7 +72,7 @@ export default function ContactSection({ telegramUsername, contactPhone }) {
               <IconPhone className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-tg-hint">Phone</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-tg-hint">{t('contact.phone')}</p>
               <p className="truncate text-sm font-semibold text-tg-text">{phoneValue}</p>
             </div>
           </a>

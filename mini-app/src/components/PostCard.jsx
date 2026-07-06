@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import { useLanguage } from '../context/LanguageContext';
 import { IconMapPin, IconPill } from './Icons';
 
 export default function PostCard({ post }) {
+  const { t } = useLanguage();
   const isBuyer = post.type === 'buyer';
   const [imageFailed, setImageFailed] = useState(false);
   const imageUrl = post.medicineImage && !imageFailed ? api.getUploadUrl(post.medicineImage) : null;
@@ -45,7 +47,7 @@ export default function PostCard({ post }) {
             className="absolute right-2 top-2 rounded-xl px-2.5 py-1 text-right"
             style={{ backgroundColor: 'color-mix(in srgb, #34d399 88%, white)' }}
           >
-            <p className="text-[9px] font-semibold uppercase text-emerald-700">Price</p>
+            <p className="text-[9px] font-semibold uppercase text-emerald-700">{t('postCard.price')}</p>
             <p className="text-sm font-bold leading-none text-emerald-800">ETB {post.price}</p>
           </div>
         )}
@@ -60,7 +62,7 @@ export default function PostCard({ post }) {
             color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color, #2dd4bf)',
           }}
         >
-          {isBuyer ? 'Buyer Request' : 'For Sale'}
+          {isBuyer ? t('postCard.buyerRequest') : t('postCard.forSale')}
         </span>
         <h3
           className="mt-2 text-sm font-bold leading-5 text-tg-text"
@@ -79,7 +81,7 @@ export default function PostCard({ post }) {
             <IconMapPin className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{post.city}</span>
           </span>
-          <p className="truncate">Qty: {post.quantity}</p>
+          <p className="truncate">{t('postCard.qty')}: {post.quantity}</p>
           {post.brand && <p className="truncate">{post.brand}</p>}
         </div>
       </div>

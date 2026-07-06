@@ -2,22 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { useTelegram } from '../context/TelegramContext';
+import { useLanguage } from '../context/LanguageContext';
 import { IconArrowLeft, IconMapPin } from '../components/Icons';
 import ContactSection from '../components/ContactSection';
 import ConfirmModal from '../components/ConfirmModal';
-import { formatCategoryLabel } from '../utils/category';
-
-const statusLabel = {
-  draft: { text: 'Draft', color: 'text-tg-hint' },
-  pending: { text: 'Pending review', color: 'text-amber-400' },
-  approved: { text: 'Approved', color: 'text-emerald-400' },
-  rejected: { text: 'Rejected', color: 'text-red-400' },
-};
 
 export default function MyPostDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { telegramId, haptic } = useTelegram();
+  const { t, tCategory, tStatus } = useLanguage();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -72,7 +66,7 @@ export default function MyPostDetail() {
       <div className="app-container text-center">
         <p className="text-red-400">{error}</p>
         <Link to="/my-posts" className="mt-4 inline-block text-sm font-semibold text-tg-link">
-          Back to My Posts
+          {t('myPostDetail.back')}
         </Link>
       </div>
     );
@@ -81,7 +75,6 @@ export default function MyPostDetail() {
   if (!post) return null;
 
   const isBuyer = post.type === 'buyer';
-  const status = statusLabel[post.approvalStatus] || statusLabel.draft;
   const editPath = isBuyer ? `/buyer/edit/${post._id}` : `/seller/edit/${post._id}`;
 
   return (
@@ -91,7 +84,7 @@ export default function MyPostDetail() {
         onClick={() => navigate('/my-posts')}
         className="mb-4 flex items-center gap-1 text-sm font-medium text-tg-hint"
       >
-        <IconArrowLeft className="h-4 w-4" /> Back to My Posts
+        <IconArrowLeft className="h-4 w-4" /> {t('myPostDetail.back')}
       </button>
 
       <div className="app-card">
@@ -103,7 +96,7 @@ export default function MyPostDetail() {
                 'color-mix(in srgb, var(--tg-theme-hint-color) 10%, var(--tg-theme-secondary-bg-color))',
             }}
           >
-            <p className="text-[10px] font-bold uppercase text-tg-hint">Medicine / Prescription</p>
+            <p className="text-[10px] font-bold uppercase text-tg-hint">{t('myPostDetail.medicinePhoto')}</p>
             <img
               src={api.getUploadUrl(post.medicineImage)}
               alt="Medicine"
@@ -121,9 +114,11 @@ export default function MyPostDetail() {
               color: isBuyer ? '#38bdf8' : 'var(--tg-theme-link-color)',
             }}
           >
-            {isBuyer ? 'Buyer Request' : 'For Sale'}
+            {isBuyer ? t('myPostDetail.buyerRequest') : t('myPostDetail.forSale')}
           </span>
-          <span className={`text-xs font-bold capitalize ${status.color}`}>{status.text}</span>
+          <span className={`text-xs font-bold ${post.approvalStatus === 'approved' ? 'text-emerald-400' : post.approvalStatus === 'rejected' ? 'text-red-400' : post.approvalStatus === 'pending' ? 'text-amber-400' : 'text-tg-hint'}`}>
+            {tStatus(post.approvalStatus)}
+          </span>
         </div>
 
         <h1 className="mt-3 text-xl font-bold text-tg-text">
@@ -132,14 +127,14 @@ export default function MyPostDetail() {
         </h1>
 
         <div className="mt-5 space-y-3">
-          {post.brand && <Row label="Brand" value={post.brand} />}
+          {post.brand && <Row label={t('myPostDetail.brand')} value={post.brand} />}
           {!isBuyer && post.category && (
-            <Row label="Category" value={formatCategoryLabel(post.category)} />
+            <Row label={t('myPostDetail.category')} value={tCategory(post.category)} />
           )}
-          <Row label="Quantity" value={post.quantity} />
-          {!isBuyer && post.price != null && <Row label="Price" value={`ETB ${post.price}`} highlight />}
+          <Row label={t('myPostDetail.quantity')} value={post.quantity} />
+          {!isBuyer && post.price != null && <Row label={t('myPostDetail.price')} value={`ETB ${post.price}`} highlight />}
           {!isBuyer && post.expiryDate && (
-            <Row label="Expiry" value={new Date(post.expiryDate).toLocaleDateString()} />
+            <Row label={t('myPostDetail.expiry')} value={new Date(post.expiryDate).toLocaleDateString()} />
           )}
           <div className="flex items-center gap-2 text-sm">
             <IconMapPin className="h-4 w-4 text-tg-link" />
@@ -162,7 +157,7 @@ export default function MyPostDetail() {
 
         {post.approvalStatus === 'approved' && post.isActive === false && (
           <p className="mt-4 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-400">
-            This post is hidden from the marketplace by an admin.
+            {t('myPostDetail.hiddenByAdmin')}
           </p>
         )}
 
@@ -177,7 +172,7 @@ export default function MyPostDetail() {
         {canEdit && (
           <div className={`mt-5 grid gap-3 ${canDelete ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <Link to={editPath} className="btn-app-secondary py-2.5 text-xs">
-              Edit
+              {t('myPostDetail.edit')}
             </Link>
             {canDelete && (
               <button
@@ -186,7 +181,7 @@ export default function MyPostDetail() {
                 disabled={deleting}
                 className="rounded-xl border border-red-500/40 bg-red-500/10 py-2.5 text-xs font-semibold text-red-400"
               >
-                Delete
+                {t('myPostDetail.delete')}
               </button>
             )}
           </div>
@@ -195,10 +190,11 @@ export default function MyPostDetail() {
 
       {showDeleteModal && (
         <ConfirmModal
-          title="Delete post?"
-          message={`"${post.medicineName}" will be permanently removed. This cannot be undone.`}
-          confirmLabel="Delete"
+          title={t('myPostDetail.deleteTitle')}
+          message={t('myPostDetail.deleteMessage', { name: post.medicineName })}
+          confirmLabel={t('myPostDetail.delete')}
           loading={deleting}
+          loadingLabel={t('myPosts.deleting')}
           onConfirm={handleDeleteConfirm}
           onClose={() => !deleting && setShowDeleteModal(false)}
         />
